@@ -1,0 +1,21 @@
+{
+  "country": "AU",
+  "country_name": "호주",
+  "language_code": "en",
+  "sources": [
+    {
+      "org": "DCCEEW",
+      "name": "DCCEEW National Greenhouse Accounts Factors",
+      "url": "https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors",
+      "data_urls": [
+        "https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors-2025",
+        "https://www.dcceew.gov.au/sites/default/files/documents/national-greenhouse-account-factors-2025.pdf"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "pdf",
+      "search_keywords": ["Australia NGA factors", "DCCEEW emission factors"],
+      "notes": "호주 NGA 배출계수 PDF 직접 다운로드"
+    }
+  ]
+}

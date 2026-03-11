@@ -1,0 +1,46 @@
+# ============================================================
+# NanoClaw .gitignore
+# ============================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+.eggs/
+
+# --- 환경변수 (토큰/시크릿 절대 커밋 금지) ---
+.env
+.env.*
+!.env.example
+
+# --- 데이터 (런타임 생성) ---
+data/nanoclaw.db
+data/nanoclaw.db-journal
+data/nanoclaw.db-wal
+data/storage/
+data/alerts/
+
+# --- 로그 ---
+logs/*.log
+logs/*.log.*
+
+# --- 수집 결과 파일 ---
+output/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- Docker ---
+docker-compose.override.yml

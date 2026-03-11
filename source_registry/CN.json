@@ -1,0 +1,16 @@
+{
+  "country": "CN",
+  "country_name": "중국",
+  "language_code": "zh",
+  "sources": [
+    {
+      "org": "MEE",
+      "name": "Ministry of Ecology and Environment",
+      "url": "https://www.mee.gov.cn",
+      "type": "Government",
+      "reliability_score": 5,
+      "search_keywords": ["China emission factors", "MEE emission factors", "中国 排放因子"],
+      "notes": "중국 생태환경부 공식 배출계수"
+    }
+  ]
+}

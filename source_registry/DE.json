@@ -1,0 +1,21 @@
+{
+  "country": "DE",
+  "country_name": "독일",
+  "language_code": "de",
+  "sources": [
+    {
+      "org": "UBA",
+      "name": "Umweltbundesamt",
+      "url": "https://www.umweltbundesamt.de",
+      "data_urls": [
+        "https://www.umweltbundesamt.de/en/publikationen/co2-emission-factors-for-fossil-fuels-0",
+        "https://www.umweltbundesamt.de/sites/default/files/medien/479/publikationen/cc_29-2022_emission-factors-fossil-fuels.pdf"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "pdf",
+      "search_keywords": ["UBA emission factors", "Umweltbundesamt Emissionsfaktoren"],
+      "notes": "독일 연방환경청 화석연료 CO2 배출계수 PDF"
+    }
+  ]
+}

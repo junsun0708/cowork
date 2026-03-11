@@ -1,0 +1,51 @@
+# ============================================================
+# NanoClaw Docker Compose
+# 실행: docker compose up -d
+# 로그: docker compose logs -f
+# 중지: docker compose down
+# 업데이트: docker compose up -d --build
+# ============================================================
+
+services:
+  nanoclaw:
+    container_name: cowork-bot-emission-factor-collector
+    image: cowork-bot-emission-factor-collector:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    volumes:
+      # DB 영속화 (컨테이너 재시작해도 데이터 유지)
+      - nanoclaw-data:/app/data
+      # 로그 영속화
+      - nanoclaw-logs:/app/logs
+      # 수집 결과 파일
+      - nanoclaw-output:/app/output
+
+    # 리소스 제한
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+        reservations:
+          memory: 128M
+          cpus: "0.25"
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  nanoclaw-data:
+    name: nanoclaw-data
+  nanoclaw-logs:
+    name: nanoclaw-logs
+  nanoclaw-output:
+    name: nanoclaw-output

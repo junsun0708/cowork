@@ -1,0 +1,31 @@
+{
+  "country": "JP",
+  "country_name": "일본",
+  "language_code": "ja",
+  "sources": [
+    {
+      "org": "MOE",
+      "name": "環境省 温室効果ガス排出係数",
+      "url": "https://policies.env.go.jp/earth/ghg-santeikohyo/calc.html",
+      "data_urls": [
+        "https://policies.env.go.jp/earth/ghg-santeikohyo/files/calc/r07_denki_coefficient_rev4.xlsx"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "xlsx",
+      "search_keywords": ["Japan MOE emission factor", "排出係数", "温室効果ガス"],
+      "notes": "일본 환경성 전력 배출계수 (R07/2025년도)"
+    },
+    {
+      "org": "IGES",
+      "name": "IGES Grid Emission Factor List",
+      "url": "https://www.iges.or.jp/en/pub/list-grid-emission-factor/en",
+      "data_urls": [],
+      "type": "Research",
+      "reliability_score": 3,
+      "data_format": "html",
+      "search_keywords": ["IGES grid emission factor", "CDM emission factor"],
+      "notes": "IGES 403 차단됨 - 수동 다운로드 필요"
+    }
+  ]
+}

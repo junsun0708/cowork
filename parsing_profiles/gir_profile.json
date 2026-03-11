@@ -1,0 +1,18 @@
+{
+  "org": "GIR",
+  "country": "KR",
+  "content_type": "pdf+html",
+  "table_keywords": ["배출계수", "CO2", "온실가스", "kgCO2", "tCO2"],
+  "url_patterns": [
+    "gir.go.kr"
+  ],
+  "data_format": "pdf_table",
+  "extraction_rules": {
+    "header_row": 0,
+    "value_columns": ["배출계수", "계수값"],
+    "unit_columns": ["단위"],
+    "item_columns": ["항목", "연료", "활동"],
+    "year_columns": ["기준년도", "연도"]
+  },
+  "notes": "온실가스종합정보센터 - 국가 공인 배출계수 (주로 PDF 보고서)"
+}

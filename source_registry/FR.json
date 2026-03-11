@@ -1,0 +1,21 @@
+{
+  "country": "FR",
+  "country_name": "프랑스",
+  "language_code": "fr",
+  "sources": [
+    {
+      "org": "ADEME",
+      "name": "ADEME Base Carbone",
+      "url": "https://base-empreinte.ademe.fr",
+      "data_urls": [
+        "https://base-empreinte.ademe.fr/donnees/download-data",
+        "https://data.ademe.fr/datasets/base-carboner"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "csv",
+      "search_keywords": ["ADEME Base Carbone", "ADEME emission factors"],
+      "notes": "프랑스 ADEME Base Carbone CSV 다운로드"
+    }
+  ]
+}

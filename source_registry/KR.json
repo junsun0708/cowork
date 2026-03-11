@@ -1,0 +1,30 @@
+{
+  "country": "KR",
+  "country_name": "대한민국",
+  "language_code": "ko",
+  "sources": [
+    {
+      "org": "GIR",
+      "name": "온실가스종합정보센터",
+      "url": "https://www.gir.go.kr",
+      "data_urls": [
+        "https://ngms.gir.go.kr:8443/"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "html",
+      "search_keywords": ["한국 배출계수", "국가 온실가스 배출계수", "GIR emission factor Korea"],
+      "notes": "국가 공인 배출계수 - NGMS 시스템 접근 필요"
+    },
+    {
+      "org": "KEITI",
+      "name": "한국환경산업기술원",
+      "url": "https://www.keiti.re.kr",
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "html",
+      "search_keywords": ["KEITI 배출계수", "환경산업기술원 탄소"],
+      "notes": "환경성적표지 관련 배출계수"
+    }
+  ]
+}

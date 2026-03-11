@@ -1,0 +1,27 @@
+[Unit]
+Description=NanoClaw Emission Factor Collection Bot
+Documentation=https://github.com/thingspire/nanoclaw
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=nanoclaw
+Group=nanoclaw
+WorkingDirectory=/opt/nanoclaw
+Environment=PATH=/opt/nanoclaw/venv/bin:/usr/local/bin:/usr/bin
+EnvironmentFile=/opt/nanoclaw/.env
+ExecStart=/opt/nanoclaw/venv/bin/python -m agents.slack_bot
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nanoclaw
+
+# 보안 설정
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/nanoclaw/data /opt/nanoclaw/logs /opt/nanoclaw/output
+
+[Install]
+WantedBy=multi-user.target

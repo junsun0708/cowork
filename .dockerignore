@@ -1,0 +1,31 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# 환경변수 (빌드에 포함하지 않음 - runtime에 env_file로 주입)
+.env
+
+# 데이터 (volume으로 관리)
+data/nanoclaw.db
+data/nanoclaw.db-journal
+data/storage/*
+data/alerts/*
+logs/*.log
+output/*
+
+# 배포/문서
+deploy/
+docs/
+README.md
+*.md
+
+# IDE
+.vscode/
+.idea/

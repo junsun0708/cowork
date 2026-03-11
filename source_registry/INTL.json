@@ -1,0 +1,52 @@
+{
+  "country": "INTL",
+  "country_name": "국제기구",
+  "language_code": "en",
+  "sources": [
+    {
+      "org": "IPCC",
+      "name": "IPCC Emission Factor Database",
+      "url": "https://www.ipcc-nggip.iges.or.jp/EFDB/main.php",
+      "type": "International",
+      "reliability_score": 4,
+      "search_keywords": ["IPCC EFDB", "IPCC emission factor database"],
+      "notes": "글로벌 표준 배출계수 DB"
+    },
+    {
+      "org": "IEA",
+      "name": "International Energy Agency",
+      "url": "https://www.iea.org/data-and-statistics",
+      "type": "International",
+      "reliability_score": 4,
+      "search_keywords": ["IEA emission factors", "IEA CO2 emissions data"],
+      "notes": "에너지 분야 국제 배출계수"
+    },
+    {
+      "org": "UNFCCC",
+      "name": "United Nations Framework Convention on Climate Change",
+      "url": "https://unfccc.int",
+      "type": "International",
+      "reliability_score": 4,
+      "search_keywords": ["UNFCCC emission factors", "UNFCCC national inventory"],
+      "notes": "국가별 인벤토리 보고서"
+    },
+    {
+      "org": "EDGAR",
+      "name": "Emissions Database for Global Atmospheric Research",
+      "url": "https://edgar.jrc.ec.europa.eu",
+      "type": "International",
+      "reliability_score": 4,
+      "search_keywords": ["EDGAR emissions data", "JRC EDGAR"],
+      "notes": "EU JRC 글로벌 배출 데이터베이스"
+    },
+    {
+      "org": "WorldBank",
+      "name": "World Bank Climate Data",
+      "url": "https://data.worldbank.org/topic/climate-change",
+      "type": "International",
+      "reliability_score": 4,
+      "search_keywords": ["World Bank emission data", "World Bank climate indicators"],
+      "notes": "세계은행 기후 데이터"
+    }
+  ]
+}

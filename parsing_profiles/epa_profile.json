@@ -1,0 +1,19 @@
+{
+  "org": "EPA",
+  "country": "US",
+  "content_type": "html+xlsx",
+  "table_keywords": ["Emission Factor", "CO2", "CH4", "N2O", "kg CO2", "GHG Factor"],
+  "url_patterns": [
+    "epa.gov/climateleadership",
+    "epa.gov/egrid"
+  ],
+  "data_format": "table",
+  "extraction_rules": {
+    "header_row": 0,
+    "value_columns": ["Emission Factor", "Factor"],
+    "unit_columns": ["Unit"],
+    "item_columns": ["Fuel Type", "Activity", "Vehicle Type"],
+    "year_columns": ["Year"]
+  },
+  "notes": "EPA GHG Emission Factors Hub - 주로 엑셀/HTML 테이블"
+}

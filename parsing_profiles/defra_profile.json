@@ -1,0 +1,18 @@
+{
+  "org": "DEFRA",
+  "country": "GB",
+  "content_type": "xlsx",
+  "table_keywords": ["Conversion Factor", "CO2e", "kg CO2e", "Emission Factor"],
+  "url_patterns": [
+    "gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors"
+  ],
+  "data_format": "xlsx_table",
+  "extraction_rules": {
+    "header_row": 0,
+    "value_columns": ["kg CO2e", "Conversion Factor", "Total kg CO2e"],
+    "unit_columns": ["Unit"],
+    "item_columns": ["Activity", "Fuel", "Type"],
+    "year_columns": ["Year"]
+  },
+  "notes": "영국 DEFRA 변환계수 - 매년 엑셀 파일로 발행"
+}

@@ -1,0 +1,33 @@
+{
+  "country": "US",
+  "country_name": "미국",
+  "language_code": "en",
+  "sources": [
+    {
+      "org": "EPA",
+      "name": "US EPA GHG Emission Factors Hub",
+      "url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+      "data_urls": [
+        "https://www.epa.gov/system/files/documents/2023-03/ghg-emission-factors-hub.xlsx"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "xlsx",
+      "search_keywords": ["EPA emission factors hub", "US GHG emission factors"],
+      "notes": "EPA 공식 배출계수 엑셀 직접 다운로드"
+    },
+    {
+      "org": "eGRID",
+      "name": "EPA eGRID Detailed Data",
+      "url": "https://www.epa.gov/egrid",
+      "data_urls": [
+        "https://www.epa.gov/egrid/detailed-data"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "xlsx",
+      "search_keywords": ["eGRID data", "US electricity emission factor"],
+      "notes": "미국 전력 배출계수 상세"
+    }
+  ]
+}
