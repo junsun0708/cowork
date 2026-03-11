@@ -22,7 +22,7 @@ set -e
 
 CONTAINER_NAME="cowork-bot-emission-factor-collector"
 IMAGE_NAME="cowork-bot-emission-factor-collector"
-APP_DIR="/opt/nanoclaw"
+APP_DIR="$HOME/projects/cowork"
 # ※ 실제 GitHub 리포 주소로 변경하세요
 GIT_REPO="https://github.com/junsun0708/cowork.git"
 GIT_BRANCH="main"
