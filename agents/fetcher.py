@@ -217,18 +217,58 @@ class Fetcher:
             logger.error(f"[Fetcher] CSV 수집 실패: {url} | {e}")
             return {"success": False, "url": url, "error": str(e)}
 
-    def fetch_auto(self, url: str, data_format: str = "html", save_dir: Path = None) -> dict:
-        """URL과 포맷에 따라 자동으로 적절한 메서드 선택"""
-        url_lower = url.lower()
+    def _guess_format_from_url(self, url: str) -> str:
+        """URL 경로에서 파일 포맷을 추측. 파일 확장자가 없으면 빈 문자열 반환."""
+        path = url.lower().split("?")[0].split("#")[0]
+        if path.endswith((".xlsx", ".xls")):
+            return "xlsx"
+        elif path.endswith(".csv"):
+            return "csv"
+        elif path.endswith(".pdf"):
+            return "pdf"
+        return ""
 
-        if data_format == "xlsx" or url_lower.endswith((".xlsx", ".xls")):
+    def fetch_auto(self, url: str, data_format: str = "html", save_dir: Path = None) -> dict:
+        """URL과 포맷에 따라 자동으로 적절한 메서드 선택
+
+        판별 우선순위: URL 확장자 > Content-Type > data_format 설정
+        (소스 레벨 data_format이 모든 URL에 동일 적용되는 문제 방지)
+        """
+        # 1순위: URL 확장자로 판별
+        url_format = self._guess_format_from_url(url)
+        if url_format:
+            fmt = url_format
+        elif data_format != "html":
+            # 2순위: data_format이 html이 아닌 경우, HEAD 요청으로 Content-Type 확인
+            fmt = self._detect_content_type(url, data_format)
+        else:
+            fmt = "html"
+
+        if fmt == "xlsx":
             return self.fetch_excel(url, save_dir)
-        elif data_format == "csv" or url_lower.endswith(".csv"):
+        elif fmt == "csv":
             return self.fetch_csv(url)
-        elif data_format == "pdf" or url_lower.endswith(".pdf"):
+        elif fmt == "pdf":
             return self.fetch_pdf(url, save_dir)
         else:
             return self.fetch_html(url)
+
+    def _detect_content_type(self, url: str, fallback: str) -> str:
+        """HEAD 요청으로 Content-Type을 확인하여 실제 포맷 판별"""
+        try:
+            resp = self.session.head(url, timeout=10, allow_redirects=True)
+            ct = resp.headers.get("Content-Type", "").lower()
+            if "spreadsheet" in ct or "excel" in ct:
+                return "xlsx"
+            elif "csv" in ct:
+                return "csv"
+            elif "pdf" in ct:
+                return "pdf"
+            elif "html" in ct or "text" in ct:
+                return "html"
+        except Exception:
+            pass
+        return fallback
 
     def fetch_api(self, url: str, params: dict = None, timeout: int = 30) -> dict:
         """API JSON 데이터 수집"""

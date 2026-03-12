@@ -90,12 +90,13 @@ class SourceDiscovery:
         registry = self.load_registry(country_code)
         sources = registry.get("sources", [])
 
-        # 국제기구 소스도 추가
+        # 국제기구 소스 추가 (data_urls가 있는 것만 — 없으면 홈페이지만 불필요 크롤링)
         intl = self.load_registry("INTL")
         for src in intl.get("sources", []):
-            src_copy = src.copy()
-            src_copy["scope"] = "international"
-            sources.append(src_copy)
+            if src.get("data_urls"):
+                src_copy = src.copy()
+                src_copy["scope"] = "international"
+                sources.append(src_copy)
 
         return sources
 

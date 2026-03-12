@@ -157,10 +157,17 @@ class Orchestrator:
             reliability = source.get("reliability_score", RELIABILITY_SCORES.get(source_type, 1))
 
             if not url and not data_urls:
+                logger.info(f"[{country_code}/{org}] URL 없음 - 스킵")
                 continue
 
             # data_urls가 있으면 우선 수집, 없으면 메인 URL
             fetch_targets = data_urls if data_urls else [url]
+
+            # 빈 URL 필터링
+            fetch_targets = [u for u in fetch_targets if u and u.strip()]
+            if not fetch_targets:
+                logger.info(f"[{country_code}/{org}] 유효한 URL 없음 - 스킵")
+                continue
 
             self.stats["orgs_processed"] += 1
 
