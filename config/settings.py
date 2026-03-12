@@ -13,23 +13,23 @@ if _env_path.exists():
     load_dotenv(_env_path, override=True)
 
 # ── 기본 경로 설정 ──
-# 로컬 개발 시 이 경로를 사용, 서버 배포 시 SERVER_ROOT로 변경
-SERVER_ROOT = Path.home() / "projects" / "cowork" / "nanoclaw"
-
-# 환경변수로 선택 가능 (서버 배포 시: NANOCLAW_ROOT=~/projects/cowork/nanoclaw)
 BASE_DIR = Path(os.getenv("NANOCLAW_ROOT", str(LOCAL_ROOT)))
 
-DATA_DIR = BASE_DIR / "data"
-RAW_DIR = DATA_DIR / "storage" / "raw"
-ALERTS_DIR = DATA_DIR / "alerts"
+# ── 수집 데이터 저장 경로 (DB, 원본파일, 리포트 등 모든 수집 산출물) ──
+# 환경변수 NANOCLAW_DATA_ROOT 로 자유롭게 변경 가능
+_DEFAULT_DATA_ROOT = str(Path.home() / "projects" / "data" / "emission-factor")
+DATA_ROOT = Path(os.getenv("NANOCLAW_DATA_ROOT", _DEFAULT_DATA_ROOT))
+
+DATA_DIR = DATA_ROOT / "data"
+RAW_DIR = DATA_ROOT / "raw"
+ALERTS_DIR = DATA_ROOT / "alerts"
+OUTPUT_DIR = DATA_ROOT / "output"
+DB_PATH = Path(os.getenv("NANOCLAW_DB_PATH", str(DATA_ROOT / "nanoclaw.db")))
+
+# ── 소스 코드 내부 경로 (소스 레지스트리, 파싱 프로필, 로그) ──
 LOGS_DIR = BASE_DIR / "logs" / "prompts"
-OUTPUT_DIR = BASE_DIR / "output"
 SOURCE_REGISTRY_DIR = BASE_DIR / "source_registry"
 PARSING_PROFILES_DIR = BASE_DIR / "parsing_profiles"
-# DB는 세션 디렉토리(쓰기 가능)에 저장, 서버에서는 BASE_DIR 사용
-_SESSION_DIR = Path(os.getenv("NANOCLAW_SESSION_DIR", "/sessions/clever-zen-hypatia"))
-DB_PATH = Path(os.getenv("NANOCLAW_DB_PATH", str(_SESSION_DIR / "nanoclaw.db")))
-# 서버 배포 시: NANOCLAW_DB_PATH=~/projects/cowork/nanoclaw/data/nanoclaw.db
 
 # ── Slack 설정 ──
 SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID", "C0AKQDRG7EH")  # #cowork
