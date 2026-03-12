@@ -152,7 +152,7 @@ class NanoClawBot:
     def _handle_collect(self, text, thread_ts, user, say, client):
         """수집 명령 처리"""
         # 국가 코드 추출
-        country_codes = re.findall(r"\b([A-Z]{2})\b", text.upper())
+        country_codes = re.findall(r"(?<![A-Z])([A-Z]{2})(?![A-Z])", text.upper())
 
         # 알려진 국가만 필터
         valid_countries = [c for c in country_codes if c in TARGET_COUNTRIES or c == "INTL"]
@@ -398,7 +398,7 @@ class NanoClawBot:
     def _handle_sync(self, text, thread_ts, user, say, client):
         """즉시 동기화 실행"""
         # 국가 코드 지정 가능
-        country_codes = re.findall(r"\b([A-Z]{2})\b", text.upper())
+        country_codes = re.findall(r"(?<![A-Z])([A-Z]{2})(?![A-Z])", text.upper())
         valid = [c for c in country_codes if c in TARGET_COUNTRIES or c == "INTL"]
 
         say(

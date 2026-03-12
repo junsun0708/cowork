@@ -18,6 +18,9 @@ services:
     env_file:
       - .env
 
+    environment:
+      - NANOCLAW_DB_PATH=/app/data/nanoclaw.db
+
     volumes:
       # DB 영속화 (컨테이너 재시작해도 데이터 유지)
       - nanoclaw-data:/app/data
