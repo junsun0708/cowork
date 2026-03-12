@@ -1,0 +1,33 @@
+{
+  "country": "VN",
+  "country_name": "베트남",
+  "language_code": "vi",
+  "sources": [
+    {
+      "org": "MONRE",
+      "name": "Ministry of Natural Resources and Environment",
+      "url": "https://monre.gov.vn",
+      "data_urls": [
+        "https://monre.gov.vn/Pages/bao-cao-kiem-ke-khi-nha-kinh.aspx"
+      ],
+      "type": "Government",
+      "reliability_score": 4,
+      "data_format": "html",
+      "search_keywords": ["Vietnam emission factor", "MONRE GHG", "he so phat thai khi nha kinh"],
+      "notes": "베트남 천연자원환경부 온실가스 인벤토리 자료"
+    },
+    {
+      "org": "EVN",
+      "name": "Vietnam Electricity - Grid Emission Factor",
+      "url": "https://www.evn.com.vn",
+      "data_urls": [
+        "https://www.evn.com.vn/d6/news/He-so-phat-thai-luoi-dien-Viet-Nam.aspx"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "html",
+      "search_keywords": ["EVN grid emission factor", "Vietnam electricity emission factor", "he so phat thai luoi dien"],
+      "notes": "베트남 전력공사 전력 그리드 배출계수"
+    }
+  ]
+}

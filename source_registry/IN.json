@@ -1,0 +1,33 @@
+{
+  "country": "IN",
+  "country_name": "인도",
+  "language_code": "en",
+  "sources": [
+    {
+      "org": "MoEFCC",
+      "name": "Ministry of Environment, Forest and Climate Change",
+      "url": "https://moef.gov.in",
+      "data_urls": [
+        "https://moef.gov.in/en/division/environment-divisions/climate-changecc-2/india-ghg-programme/"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "html",
+      "search_keywords": ["MoEFCC emission factor", "India GHG emission factors", "India climate change ministry"],
+      "notes": "인도 환경산림기후변화부 온실가스 프로그램"
+    },
+    {
+      "org": "CEA",
+      "name": "Central Electricity Authority - CO2 Baseline Database",
+      "url": "https://cea.nic.in",
+      "data_urls": [
+        "https://cea.nic.in/cdm-co2-baseline-database/"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "pdf",
+      "search_keywords": ["CEA CO2 baseline database", "India electricity emission factor", "Central Electricity Authority emission"],
+      "notes": "인도 중앙전력청 CO2 베이스라인 데이터베이스 - CDM용 전력 배출계수"
+    }
+  ]
+}

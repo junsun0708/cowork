@@ -1,0 +1,33 @@
+{
+  "country": "ID",
+  "country_name": "인도네시아",
+  "language_code": "id",
+  "sources": [
+    {
+      "org": "KLHK",
+      "name": "Kementerian Lingkungan Hidup dan Kehutanan",
+      "url": "https://www.menlhk.go.id",
+      "data_urls": [
+        "https://ditjenppi.menlhk.go.id/inventarisasi-grkopi/faktor-emisi"
+      ],
+      "type": "Government",
+      "reliability_score": 4,
+      "data_format": "html",
+      "search_keywords": ["KLHK faktor emisi", "Indonesia emission factor", "faktor emisi gas rumah kaca"],
+      "notes": "인도네시아 환경산림부 온실가스 배출계수"
+    },
+    {
+      "org": "PLN",
+      "name": "PT PLN (Persero) - Grid Emission Factor",
+      "url": "https://web.pln.co.id",
+      "data_urls": [
+        "https://web.pln.co.id/statics/uploads/2024/faktor-emisi-grkopi.pdf"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "pdf",
+      "search_keywords": ["PLN grid emission factor", "Indonesia electricity emission", "faktor emisi jaringan listrik"],
+      "notes": "인도네시아 국영전력회사 전력 그리드 배출계수"
+    }
+  ]
+}

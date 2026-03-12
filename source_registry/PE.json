@@ -1,0 +1,33 @@
+{
+  "country": "PE",
+  "country_name": "페루",
+  "language_code": "es",
+  "sources": [
+    {
+      "org": "MINAM",
+      "name": "Ministerio del Ambiente",
+      "url": "https://www.gob.pe/minam",
+      "data_urls": [
+        "https://infocarbono.minam.gob.pe/inventarios-nacionales-gei/"
+      ],
+      "type": "Government",
+      "reliability_score": 4,
+      "data_format": "html",
+      "search_keywords": ["MINAM factores emision", "Peru emission factors", "inventario nacional GEI Peru"],
+      "notes": "페루 환경부 국가 온실가스 인벤토리 및 배출계수"
+    },
+    {
+      "org": "OSINERGMIN",
+      "name": "Organismo Supervisor de la Inversión en Energía y Minería",
+      "url": "https://www.osinergmin.gob.pe",
+      "data_urls": [
+        "https://www.osinergmin.gob.pe/seccion/centro_documental/electricidad/factor-emision"
+      ],
+      "type": "Government",
+      "reliability_score": 4,
+      "data_format": "html",
+      "search_keywords": ["OSINERGMIN factor emision", "Peru electricity emission factor", "factor emision electrico Peru"],
+      "notes": "페루 에너지광업감독기관 전력 배출계수"
+    }
+  ]
+}

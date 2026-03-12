@@ -4,6 +4,9 @@ NanoClaw Extractor Agent
 - 테이블 파싱, 키워드 매칭
 - 배출계수 후보 식별
 - EPA 스타일 멀티 테이블 지원
+- 개별 가스(CO2, CH4, N2O) 추출 지원
+- Scope 감지 지원
+- GWP 버전 감지 지원
 """
 import re
 import json
@@ -16,6 +19,19 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from config.settings import PDF_KEYWORDS, TABLE_KEYWORDS, TAXONOMY
 
 logger = logging.getLogger("nanoclaw.extractor")
+
+
+def get_hierarchy_for_category(category: str) -> Dict[str, str]:
+    """택소노미에서 카테고리의 계층 정보를 반환"""
+    for parent, children in TAXONOMY.items():
+        if category in children:
+            return {
+                "scope": "",
+                "level1": parent,
+                "level2": category,
+                "level3": "",
+            }
+    return {"scope": "", "level1": "", "level2": category or "", "level3": ""}
 
 
 class Extractor:
@@ -68,6 +84,36 @@ class Extractor:
     # 테이블 경계 패턴 ("Table 1", "표 1" 등)
     TABLE_BOUNDARY = re.compile(r"^(Table\s+\d+|표\s+\d+|Part\s+\d+)", re.IGNORECASE)
 
+    # GWP 버전 패턴
+    GWP_PATTERNS = [
+        (re.compile(r"\bAR6\b", re.IGNORECASE), "AR6"),
+        (re.compile(r"\bAR5\b", re.IGNORECASE), "AR5"),
+        (re.compile(r"\bAR4\b", re.IGNORECASE), "AR4"),
+        (re.compile(r"\bSAR\b", re.IGNORECASE), "SAR"),
+        (re.compile(r"\bTAR\b", re.IGNORECASE), "TAR"),
+        (re.compile(r"\bSixth\s+Assessment\b", re.IGNORECASE), "AR6"),
+        (re.compile(r"\bFifth\s+Assessment\b", re.IGNORECASE), "AR5"),
+        (re.compile(r"\bFourth\s+Assessment\b", re.IGNORECASE), "AR4"),
+        (re.compile(r"\bThird\s+Assessment\b", re.IGNORECASE), "TAR"),
+        (re.compile(r"\bSecond\s+Assessment\b", re.IGNORECASE), "SAR"),
+        (re.compile(r"\b6차\s*평가\b", re.IGNORECASE), "AR6"),
+        (re.compile(r"\b5차\s*평가\b", re.IGNORECASE), "AR5"),
+        (re.compile(r"\b4차\s*평가\b", re.IGNORECASE), "AR4"),
+        (re.compile(r"\bIPCC\s+2021\b", re.IGNORECASE), "AR6"),
+        (re.compile(r"\bIPCC\s+2014\b", re.IGNORECASE), "AR5"),
+        (re.compile(r"\bIPCC\s+2007\b", re.IGNORECASE), "AR4"),
+    ]
+
+    # Scope 패턴
+    SCOPE_PATTERNS = [
+        (re.compile(r"\bScope\s*3\b", re.IGNORECASE), "Scope 3"),
+        (re.compile(r"\bScope\s*2\b", re.IGNORECASE), "Scope 2"),
+        (re.compile(r"\bScope\s*1\b", re.IGNORECASE), "Scope 1"),
+        (re.compile(r"기타\s*간접\s*배출", re.IGNORECASE), "Scope 3"),
+        (re.compile(r"간접\s*배출", re.IGNORECASE), "Scope 2"),
+        (re.compile(r"직접\s*배출", re.IGNORECASE), "Scope 1"),
+    ]
+
     # 헤더 키워드 세트
     HEADER_KEYWORDS = {
         "ef": ["emission factor", "ef", "factor", "value", "co2 factor", "ch4 factor",
@@ -79,6 +125,9 @@ class Extractor:
                  "연료", "活動", "source", "type", "事業者名", "電気事業者",
                  "메뉴", "メニュー"],
         "year": ["year", "연도", "年度", "令和"],
+        "co2": ["co2", "carbon dioxide", "이산화탄소", "二酸化炭素"],
+        "ch4": ["ch4", "methane", "메탄", "メタン"],
+        "n2o": ["n2o", "nitrous oxide", "아산화질소", "一酸化二窒素"],
     }
 
     def extract_from_tables(self, tables: List[List], source_info: dict = None) -> List[Dict]:
@@ -130,6 +179,41 @@ class Extractor:
 
         return sub_tables if sub_tables else [table]
 
+    def _detect_gwp_version(self, text: str) -> Optional[str]:
+        """텍스트에서 GWP 버전(AR4/AR5/AR6/SAR/TAR) 감지"""
+        for pattern, version in self.GWP_PATTERNS:
+            if pattern.search(text):
+                return version
+        return None
+
+    def _detect_scope(self, text: str) -> Optional[str]:
+        """텍스트에서 Scope(1/2/3) 감지"""
+        for pattern, scope in self.SCOPE_PATTERNS:
+            if pattern.search(text):
+                return scope
+        return None
+
+    def _get_table_surrounding_text(self, table: List[List], header_idx: int) -> str:
+        """테이블 헤더 위아래 텍스트를 결합하여 컨텍스트 반환"""
+        parts = []
+        # 헤더 위 5행
+        for i in range(max(0, header_idx - 5), header_idx):
+            row_text = " ".join(
+                str(c).strip() for c in table[i]
+                if str(c).strip() not in ("nan", "None", "")
+            )
+            if row_text:
+                parts.append(row_text)
+        # 헤더 행 자체
+        if header_idx < len(table):
+            header_text = " ".join(
+                str(c).strip() for c in table[header_idx]
+                if str(c).strip() not in ("nan", "None", "")
+            )
+            if header_text:
+                parts.append(header_text)
+        return " ".join(parts)
+
     def _extract_single_table(self, table: List[List], source_info: dict = None) -> List[Dict]:
         """단일 테이블에서 배출계수 추출"""
         results = []
@@ -147,9 +231,20 @@ class Extractor:
         item_col = self._find_column(header_lower, self.HEADER_KEYWORDS["item"])
         year_col = self._find_column(header_lower, self.HEADER_KEYWORDS["year"])
 
+        # 개별 가스 컬럼 식별
+        co2_col = self._find_column(header_lower, self.HEADER_KEYWORDS["co2"])
+        ch4_col = self._find_column(header_lower, self.HEADER_KEYWORDS["ch4"])
+        n2o_col = self._find_column(header_lower, self.HEADER_KEYWORDS["n2o"])
+
+        # ef_col과 동일한 컬럼이면 개별 가스 컬럼 아님 (헤더에 co2가 있어도 ef 컬럼과 동일할 수 있음)
+        if co2_col is not None and co2_col == ef_col:
+            co2_col = None
+        has_individual_gas_cols = any(c is not None for c in [co2_col, ch4_col, n2o_col])
+
         # 서브 헤더 단위 행 검사 (EPA 스타일)
         unit_from_subheader = ""
         ef_unit_from_subheader = ""
+        gas_units_from_subheader = {}  # {gas: unit_string}
         data_start = header_idx + 1
 
         if header_idx + 1 < len(table):
@@ -168,9 +263,15 @@ class Extractor:
                     ef_unit_from_subheader = sub_cells[ef_col].strip()
                     if ef_unit_from_subheader in ("nan", "None"):
                         ef_unit_from_subheader = ""
+                # 개별 가스 컬럼 단위 추출
+                for gas_name, gas_col in [("co2", co2_col), ("ch4", ch4_col), ("n2o", n2o_col)]:
+                    if gas_col is not None and gas_col < len(sub_cells):
+                        gas_unit = sub_cells[gas_col].strip()
+                        if gas_unit not in ("nan", "None", ""):
+                            gas_units_from_subheader[gas_name] = gas_unit
                 data_start = header_idx + 2
 
-        if ef_col is None:
+        if ef_col is None and not has_individual_gas_cols:
             return self._extract_from_text_table(table, source_info)
 
         # 단위 결정
@@ -191,34 +292,59 @@ class Extractor:
                 table_context = row_text
                 break
 
+        # 테이블 주변 텍스트에서 Scope, GWP 감지
+        surrounding_text = self._get_table_surrounding_text(table, header_idx)
+        table_scope = self._detect_scope(surrounding_text)
+        table_gwp = self._detect_gwp_version(surrounding_text)
+
         # 데이터 행 처리
         current_category = ""
         for row in table[data_start:]:
-            if len(row) <= ef_col:
+            # ef_col 또는 개별 가스 컬럼 중 하나라도 접근 가능해야 함
+            min_required_col = ef_col if ef_col is not None else 0
+            if has_individual_gas_cols:
+                gas_cols_present = [c for c in [co2_col, ch4_col, n2o_col] if c is not None]
+                min_required_col = max(min_required_col or 0, max(gas_cols_present))
+            if len(row) <= (min_required_col or 0):
                 continue
 
             try:
-                value_str = str(row[ef_col]).strip()
-                if value_str in ("nan", "None", "", "-"):
-                    # 카테고리/섹션 행일 수 있음
+                # 메인 ef 값 추출
+                value = None
+                value_str = ""
+                if ef_col is not None and ef_col < len(row):
+                    value_str = str(row[ef_col]).strip()
+                    if value_str in ("nan", "None", "", "-"):
+                        # 카테고리/섹션 행일 수 있음 (개별 가스도 없으면)
+                        if not has_individual_gas_cols:
+                            if item_col is not None and item_col < len(row):
+                                candidate = str(row[item_col]).strip()
+                                if candidate not in ("nan", "None", "", "-"):
+                                    if self.TABLE_BOUNDARY.match(candidate):
+                                        break
+                                    current_category = candidate
+                            continue
+                    else:
+                        value_match = self.NUMBER_PATTERN.search(value_str)
+                        if value_match:
+                            v = float(value_match.group(1))
+                            if 0 < v <= 100000 and not (2000 <= v <= 2030):
+                                value = v
+
+                # 개별 가스 값 추출
+                co2_value = self._extract_gas_value(row, co2_col)
+                ch4_value = self._extract_gas_value(row, ch4_col)
+                n2o_value = self._extract_gas_value(row, n2o_col)
+
+                # ef 값도 없고 개별 가스 값도 모두 없으면 건너뜀
+                if value is None and co2_value is None and ch4_value is None and n2o_value is None:
+                    # 카테고리 행인지 확인
                     if item_col is not None and item_col < len(row):
                         candidate = str(row[item_col]).strip()
                         if candidate not in ("nan", "None", "", "-"):
-                            # 새 테이블 경계면 중단
                             if self.TABLE_BOUNDARY.match(candidate):
                                 break
                             current_category = candidate
-                    continue
-
-                value_match = self.NUMBER_PATTERN.search(value_str)
-                if not value_match:
-                    continue
-
-                value = float(value_match.group(1))
-                if value <= 0 or value > 100000:
-                    continue
-                # 연도값 제외
-                if 2000 <= value <= 2030:
                     continue
 
                 item = ""
@@ -244,16 +370,45 @@ class Extractor:
                     year_match = self.YEAR_PATTERN.search(str(row[year_col]))
                     year = int(year_match.group(1)) if year_match else None
 
+                # 행 텍스트에서 Scope/GWP 추가 감지
+                row_text = " ".join(str(c) for c in row)
+                row_scope = self._detect_scope(row_text) or table_scope
+                row_gwp = self._detect_gwp_version(row_text) or table_gwp
+
+                # 카테고리 분류 및 계층 정보
+                category = self.classify_category(item) or current_category or ""
+                hierarchy = get_hierarchy_for_category(category)
+
                 record = {
                     "item_name_original": item,
                     "item_name_standard": self.standardize_item_name(item, "en"),
-                    "category": self.classify_category(item) or current_category or "",
+                    "category": category,
+                    "scope": row_scope or hierarchy.get("scope", ""),
+                    "level1": hierarchy.get("level1", ""),
+                    "level2": hierarchy.get("level2", ""),
+                    "level3": hierarchy.get("level3", ""),
                     "standard_value": value,
                     "standard_unit": row_unit,
                     "year": year,
                     "extraction_method": "table_column_smart",
                     "table_context": table_context,
                 }
+
+                # 개별 가스 값 추가
+                if co2_value is not None:
+                    record["co2_value"] = co2_value
+                    record["co2_unit"] = gas_units_from_subheader.get("co2", row_unit)
+                if ch4_value is not None:
+                    record["ch4_value"] = ch4_value
+                    record["ch4_unit"] = gas_units_from_subheader.get("ch4", row_unit)
+                if n2o_value is not None:
+                    record["n2o_value"] = n2o_value
+                    record["n2o_unit"] = gas_units_from_subheader.get("n2o", row_unit)
+
+                # GWP 버전
+                if row_gwp:
+                    record["gwp_version"] = row_gwp
+
                 if source_info:
                     record.update(source_info)
                 results.append(record)
@@ -262,6 +417,21 @@ class Extractor:
                 logger.debug(f"[Extractor] 행 파싱 스킵: {e}")
 
         return results
+
+    def _extract_gas_value(self, row: List, col: Optional[int]) -> Optional[float]:
+        """행에서 특정 가스 컬럼의 수치 값을 추출"""
+        if col is None or col >= len(row):
+            return None
+        val_str = str(row[col]).strip()
+        if val_str in ("nan", "None", "", "-"):
+            return None
+        match = self.NUMBER_PATTERN.search(val_str)
+        if not match:
+            return None
+        v = float(match.group(1))
+        if v <= 0 or v > 100000 or (2000 <= v <= 2030):
+            return None
+        return v
 
     def _find_header_row(self, table: List[List]) -> tuple:
         """테이블에서 실제 헤더 행 찾기 (빈 행/제목 행/긴 문장 건너뛰기)"""
@@ -280,7 +450,7 @@ class Extractor:
 
             row_text = " ".join(c.lower() for c in non_empty)
 
-            # 헤더 키워드 매칭
+            # 헤더 키워드 매칭 (ef, unit, item, year + co2, ch4, n2o)
             match_count = 0
             for kw_list in self.HEADER_KEYWORDS.values():
                 if any(kw in row_text for kw in kw_list):
@@ -297,6 +467,10 @@ class Extractor:
         """텍스트에서 배출계수 패턴 추출"""
         results = []
 
+        # 텍스트 전체에서 GWP 버전 감지
+        text_gwp = self._detect_gwp_version(text)
+        text_scope = self._detect_scope(text)
+
         sentences = re.split(r"[.\n]", text)
 
         for sentence in sentences:
@@ -312,6 +486,10 @@ class Extractor:
             year_match = self.YEAR_PATTERN.search(sentence)
             year = int(year_match.group(1)) if year_match else None
 
+            # 문장별 Scope/GWP 감지
+            sent_scope = self._detect_scope(sentence) or text_scope
+            sent_gwp = self._detect_gwp_version(sentence) or text_gwp
+
             for num_str in numbers:
                 try:
                     value = float(num_str)
@@ -325,6 +503,10 @@ class Extractor:
                             "year": year,
                             "extraction_method": "text_pattern",
                         }
+                        if sent_scope:
+                            record["scope"] = sent_scope
+                        if sent_gwp:
+                            record["gwp_version"] = sent_gwp
                         if source_info:
                             record.update(source_info)
                         results.append(record)
@@ -334,45 +516,335 @@ class Extractor:
         return results
 
     def classify_category(self, item_name: str) -> Optional[str]:
-        """항목명을 택소노미 카테고리로 분류"""
+        """항목명을 택소노미 카테고리로 분류, 계층 정보 포함"""
         item_lower = item_name.lower()
 
+        # TAXONOMY에서 긴 카테고리명부터 매칭 (bus_transport > bus 방지)
+        all_tax_children = []
         for parent, children in TAXONOMY.items():
             for child in children:
-                if child.replace("_", " ") in item_lower or child in item_lower:
-                    return child
+                all_tax_children.append(child)
+        all_tax_children.sort(key=len, reverse=True)
+
+        for child in all_tax_children:
+            if child.replace("_", " ") in item_lower or child in item_lower:
+                return child
 
         keyword_map = {
-            "electricity": ["전력", "전기", "grid", "power", "電力", "electricité", "egrid"],
-            "natural_gas": ["천연가스", "lng", "natural gas", "天然ガス", "gaz naturel"],
-            "coal": ["석탄", "coal", "anthracite", "bituminous", "lignite", "charbon"],
-            "diesel": ["디젤", "경유", "diesel", "distillate"],
-            "gasoline": ["가솔린", "휘발유", "gasoline", "petrol", "motor gasoline", "essence"],
-            "lpg": ["lpg", "프로판", "부탄", "propane", "butane"],
-            "fuel_oil": ["fuel oil", "residual", "중유", "kerosene", "jet fuel", "aviation"],
-            "cement": ["시멘트", "cement", "セメント", "ciment"],
-            "steel": ["철강", "steel", "鉄鋼", "acier"],
+            # Energy
+            "electricity": [
+                "전력", "전기", "grid", "power", "電力", "electricité", "egrid",
+                "điện", "listrik", "ไฟฟ้า", "electricidad", "eletricidade",
+                "전력사용", "grid electricity", "grid power",
+            ],
+            "natural_gas": [
+                "천연가스", "lng", "natural gas", "天然ガス", "gaz naturel",
+                "khí tự nhiên", "gas alam", "ก๊าซธรรมชาติ", "gas natural",
+                "gás natural", "도시가스", "city gas",
+            ],
+            "coal": [
+                "석탄", "coal", "anthracite", "bituminous", "lignite", "charbon",
+                "than đá", "batu bara", "ถ่านหิน", "carbón", "carvão",
+                "무연탄", "유연탄", "아역청탄",
+            ],
+            "diesel": [
+                "디젤", "경유", "diesel", "distillate", "gasoil",
+                "dầu diesel", "solar", "ดีเซล", "diésel", "gasóleo",
+            ],
+            "gasoline": [
+                "가솔린", "휘발유", "gasoline", "petrol", "motor gasoline", "essence",
+                "xăng", "bensin", "น้ำมันเบนซิน", "gasolina",
+            ],
+            "lpg": [
+                "lpg", "프로판", "부탄", "propane", "butane",
+                "khí hóa lỏng", "elpiji", "แอลพีจี", "glp",
+            ],
+            "fuel_oil": [
+                "fuel oil", "residual", "중유", "kerosene", "jet fuel", "aviation",
+                "dầu nhiên liệu", "minyak bahan bakar", "น้ำมันเตา",
+                "aceite combustible", "óleo combustível",
+                "등유", "항공유",
+            ],
+            "renewable_energy": [
+                "재생에너지", "renewable", "solar power", "wind power", "太陽光",
+                "năng lượng tái tạo", "energi terbarukan", "พลังงานหมุนเวียน",
+                "energía renovable", "energia renovável",
+                "태양광", "풍력", "수력",
+            ],
+            # Transportation
+            "road_transport": [
+                "도로교통", "자동차", "차량", "vehicle", "car", "truck", "bus",
+                "xe hơi", "kendaraan", "ยานพาหนะ", "vehículo", "veículo",
+                "승용차", "트럭", "버스",
+            ],
+            "aviation": [
+                "항공", "비행기", "flight", "aircraft", "airline",
+                "hàng không", "penerbangan", "การบิน", "aviación", "aviação",
+            ],
+            "marine_transport": [
+                "해운", "선박", "ship", "marine", "maritime", "vessel",
+                "hàng hải", "pelayaran", "การเดินเรือ", "transporte marítimo",
+            ],
+            "rail_transport": [
+                "철도", "기차", "rail", "train", "railway",
+                "đường sắt", "kereta api", "รถไฟ", "ferrocarril", "ferrovia",
+            ],
+            # Industry
+            "cement": [
+                "시멘트", "cement", "セメント", "ciment",
+                "xi măng", "semen", "ซีเมนต์", "cemento", "cimento",
+            ],
+            "steel": [
+                "철강", "steel", "鉄鋼", "acier",
+                "thép", "baja", "เหล็กกล้า", "acero", "aço",
+            ],
+            "chemical": [
+                "화학", "chemical", "化学", "chimique",
+                "hóa chất", "kimia", "เคมี", "químico",
+            ],
+            "aluminum": [
+                "알루미늄", "aluminum", "aluminium", "アルミニウム",
+                "nhôm", "aluminium", "อลูมิเนียม", "aluminio",
+            ],
+            "fertilizer": [
+                "비료", "fertilizer", "肥料",
+                "phân bón", "pupuk", "ปุ๋ย", "fertilizante",
+            ],
+            # Waste
+            "landfill": [
+                "매립", "landfill", "埋立",
+                "chôn lấp", "tempat pembuangan", "หลุมฝังกลบ", "vertedero", "aterro",
+            ],
+            "wastewater": [
+                "폐수", "하수", "wastewater", "sewage",
+                "nước thải", "air limbah", "น้ำเสีย", "aguas residuales", "águas residuais",
+            ],
+            "recycling": [
+                "재활용", "recycling", "リサイクル",
+                "tái chế", "daur ulang", "การรีไซเคิล", "reciclaje", "reciclagem",
+            ],
+            # Agriculture
+            "livestock": [
+                "축산", "가축", "livestock", "cattle", "畜産",
+                "chăn nuôi", "peternakan", "ปศุสัตว์", "ganadería", "pecuária",
+                "소", "돼지", "가금류",
+            ],
+            "rice": [
+                "벼", "쌀", "rice", "稲作",
+                "lúa", "padi", "ข้าว", "arroz",
+            ],
+            "fertilizer_use": [
+                "비료사용", "fertilizer use", "fertilizer application",
+                "sử dụng phân bón", "penggunaan pupuk",
+            ],
+            # Scope 3 / Indirect categories
+            "purchased_goods": [
+                "구매품", "purchased goods", "purchased services",
+                "원자재", "raw materials", "구매 제품", "구매 서비스",
+                "hàng hóa mua", "barang yang dibeli",
+            ],
+            "business_travel": [
+                "출장", "business travel", "업무출장",
+                "công tác", "perjalanan bisnis", "การเดินทางเพื่อธุรกิจ",
+                "viaje de negocios", "viagem de negócios",
+            ],
+            "commuting": [
+                "통근", "commuting", "employee commuting", "통근교통",
+                "đi làm", "komuter", "การเดินทางไปทำงาน",
+                "desplazamiento", "deslocamento",
+            ],
+            "logistics": [
+                "물류", "logistics", "freight", "화물운송", "운송",
+                "hậu cần", "logistik", "โลจิสติกส์", "logística",
+                "upstream transport", "downstream transport",
+            ],
+            "events": [
+                "이벤트", "행사", "event", "conference", "meeting",
+                "sự kiện", "acara", "กิจกรรม", "evento",
+            ],
+            "capital_goods": [
+                "자본재", "capital goods", "설비투자",
+                "hàng vốn", "barang modal",
+            ],
+            "waste_generated": [
+                "폐기물", "waste generated in operations", "사업장 폐기물",
+                "chất thải", "limbah",
+            ],
+            "use_of_sold_products": [
+                "판매제품 사용", "use of sold products",
+            ],
+            "end_of_life": [
+                "폐기처리", "end-of-life treatment", "end of life",
+            ],
+            "leased_assets": [
+                "임대자산", "leased assets",
+            ],
+            "franchises": [
+                "프랜차이즈", "franchise",
+            ],
+            "investments": [
+                "투자", "investments", "investment",
+            ],
         }
 
+        # 긴 키워드부터 매칭 (business travel이 bus보다 먼저 매칭되도록)
+        matches = []
         for category, keywords in keyword_map.items():
-            if any(kw in item_lower for kw in keywords):
-                return category
+            for kw in keywords:
+                if kw in item_lower:
+                    matches.append((len(kw), category))
+        if matches:
+            matches.sort(reverse=True)  # 가장 긴 매칭 우선
+            return matches[0][1]
 
         return None
 
     def standardize_item_name(self, original: str, language_code: str = "en") -> str:
         """항목명을 영문 표준명으로 변환"""
         translations = {
+            # 한국어
             "전력": "electricity",
+            "전기": "electricity",
             "천연가스": "natural_gas",
+            "도시가스": "natural_gas",
             "석탄": "coal",
+            "무연탄": "anthracite_coal",
+            "유연탄": "bituminous_coal",
+            "아역청탄": "sub_bituminous_coal",
+            "갈탄": "lignite_coal",
             "경유": "diesel",
             "휘발유": "gasoline",
             "시멘트": "cement",
             "철강": "steel",
+            "중유": "fuel_oil",
+            "등유": "kerosene",
+            "항공유": "jet_fuel",
+            "프로판": "lpg_propane",
+            "부탄": "lpg_butane",
+            "통근": "commuting",
+            "출장": "business_travel",
+            "물류": "logistics",
+            "구매품": "purchased_goods",
+            "폐기물": "waste_generated",
+            "재활용": "recycling",
+            "매립": "landfill",
+            "폐수": "wastewater",
+            "축산": "livestock",
+            "비료": "fertilizer",
+            "태양광": "solar_power",
+            "풍력": "wind_power",
+            "알루미늄": "aluminum",
+            "화학": "chemical",
+            # 일본어
             "電力": "electricity",
             "天然ガス": "natural_gas",
             "石炭": "coal",
+            "軽油": "diesel",
+            "ガソリン": "gasoline",
+            "セメント": "cement",
+            "鉄鋼": "steel",
+            "灯油": "kerosene",
+            "重油": "fuel_oil",
+            "プロパン": "lpg_propane",
+            "アルミニウム": "aluminum",
+            "肥料": "fertilizer",
+            "畜産": "livestock",
+            "廃棄物": "waste_generated",
+            "リサイクル": "recycling",
+            # 베트남어
+            "điện": "electricity",
+            "khí tự nhiên": "natural_gas",
+            "than đá": "coal",
+            "dầu diesel": "diesel",
+            "xăng": "gasoline",
+            "xi măng": "cement",
+            "thép": "steel",
+            "nhôm": "aluminum",
+            "phân bón": "fertilizer",
+            "chăn nuôi": "livestock",
+            "lúa": "rice",
+            "nước thải": "wastewater",
+            "chất thải": "waste_generated",
+            "tái chế": "recycling",
+            "hàng không": "aviation",
+            "đường sắt": "rail_transport",
+            "hàng hải": "marine_transport",
+            "công tác": "business_travel",
+            "đi làm": "commuting",
+            "hậu cần": "logistics",
+            # 인도네시아어
+            "listrik": "electricity",
+            "gas alam": "natural_gas",
+            "batu bara": "coal",
+            "solar": "diesel",
+            "bensin": "gasoline",
+            "semen": "cement",
+            "baja": "steel",
+            "aluminium": "aluminum",
+            "pupuk": "fertilizer",
+            "peternakan": "livestock",
+            "padi": "rice",
+            "air limbah": "wastewater",
+            "limbah": "waste_generated",
+            "daur ulang": "recycling",
+            "penerbangan": "aviation",
+            "kereta api": "rail_transport",
+            "pelayaran": "marine_transport",
+            "perjalanan bisnis": "business_travel",
+            "komuter": "commuting",
+            "logistik": "logistics",
+            # 태국어
+            "ไฟฟ้า": "electricity",
+            "ก๊าซธรรมชาติ": "natural_gas",
+            "ถ่านหิน": "coal",
+            "ดีเซล": "diesel",
+            "น้ำมันเบนซิน": "gasoline",
+            "ซีเมนต์": "cement",
+            "เหล็กกล้า": "steel",
+            "อลูมิเนียม": "aluminum",
+            "ปุ๋ย": "fertilizer",
+            "ปศุสัตว์": "livestock",
+            "ข้าว": "rice",
+            "น้ำเสีย": "wastewater",
+            "การรีไซเคิล": "recycling",
+            "การบิน": "aviation",
+            "รถไฟ": "rail_transport",
+            "โลจิสติกส์": "logistics",
+            "แอลพีจี": "lpg",
+            # 스페인어
+            "electricidad": "electricity",
+            "gas natural": "natural_gas",
+            "carbón": "coal",
+            "diésel": "diesel",
+            "gasolina": "gasoline",
+            "cemento": "cement",
+            "acero": "steel",
+            "aluminio": "aluminum",
+            "fertilizante": "fertilizer",
+            "ganadería": "livestock",
+            "arroz": "rice",
+            "aguas residuales": "wastewater",
+            "reciclaje": "recycling",
+            "aviación": "aviation",
+            "ferrocarril": "rail_transport",
+            "transporte marítimo": "marine_transport",
+            "viaje de negocios": "business_travel",
+            "desplazamiento": "commuting",
+            "logística": "logistics",
+            # 포르투갈어
+            "eletricidade": "electricity",
+            "gás natural": "natural_gas",
+            "carvão": "coal",
+            "gasóleo": "diesel",
+            "cimento": "cement",
+            "aço": "steel",
+            "águas residuais": "wastewater",
+            "reciclagem": "recycling",
+            "aviação": "aviation",
+            "ferrovia": "rail_transport",
+            "viagem de negócios": "business_travel",
+            "deslocamento": "commuting",
+            # 영문 확장
             "grid electricity": "electricity",
             "grid power": "electricity",
             "natural gas": "natural_gas",
@@ -386,12 +858,23 @@ class Extractor:
             "jet fuel": "jet_fuel",
             "kerosene": "kerosene",
             "propane": "lpg_propane",
+            "business travel": "business_travel",
+            "employee commuting": "commuting",
+            "purchased goods": "purchased_goods",
+            "purchased services": "purchased_goods",
+            "capital goods": "capital_goods",
+            "use of sold products": "use_of_sold_products",
+            "end-of-life treatment": "end_of_life",
+            "leased assets": "leased_assets",
+            "upstream transport": "logistics",
+            "downstream transport": "logistics",
         }
 
         original_lower = original.lower().strip()
-        for key, std_name in translations.items():
+        # 긴 키부터 매칭해야 "natural gas"가 "gas" 보다 먼저 매칭됨
+        for key in sorted(translations.keys(), key=len, reverse=True):
             if key.lower() in original_lower:
-                return std_name
+                return translations[key]
 
         return original_lower.replace(" ", "_")
 
@@ -483,6 +966,12 @@ class Extractor:
     def _extract_from_text_table(self, table: List[List], source_info: dict = None) -> List[Dict]:
         """구조화되지 않은 테이블에서 패턴 추출"""
         results = []
+
+        # 전체 테이블 텍스트에서 Scope/GWP 감지
+        full_text = " ".join(" ".join(str(c) for c in row) for row in table)
+        table_scope = self._detect_scope(full_text)
+        table_gwp = self._detect_gwp_version(full_text)
+
         for row in table:
             row_text = " ".join(str(c) for c in row)
             unit = self._detect_unit_extended(row_text)
@@ -498,6 +987,10 @@ class Extractor:
                                 "standard_unit": unit,
                                 "extraction_method": "text_table_pattern",
                             }
+                            if table_scope:
+                                record["scope"] = table_scope
+                            if table_gwp:
+                                record["gwp_version"] = table_gwp
                             if source_info:
                                 record.update(source_info)
                             results.append(record)

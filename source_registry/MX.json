@@ -1,0 +1,33 @@
+{
+  "country": "MX",
+  "country_name": "멕시코",
+  "language_code": "es",
+  "sources": [
+    {
+      "org": "SEMARNAT",
+      "name": "Secretaría de Medio Ambiente y Recursos Naturales",
+      "url": "https://www.gob.mx/semarnat",
+      "data_urls": [
+        "https://www.gob.mx/semarnat/acciones-y-programas/factores-de-emision"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "html",
+      "search_keywords": ["SEMARNAT factores de emision", "Mexico emission factors", "factores emision gases efecto invernadero"],
+      "notes": "멕시코 환경천연자원부 공식 배출계수"
+    },
+    {
+      "org": "CRE",
+      "name": "Comisión Reguladora de Energía - Factor de Emisión Eléctrico",
+      "url": "https://www.gob.mx/cre",
+      "data_urls": [
+        "https://www.gob.mx/cre/articulos/factor-de-emision-del-sector-electrico-nacional"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "html",
+      "search_keywords": ["CRE factor emision electrico", "Mexico electricity emission factor", "factor emision sector electrico nacional"],
+      "notes": "멕시코 에너지규제위원회 전력 배출계수"
+    }
+  ]
+}

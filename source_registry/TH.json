@@ -1,0 +1,33 @@
+{
+  "country": "TH",
+  "country_name": "태국",
+  "language_code": "th",
+  "sources": [
+    {
+      "org": "TGO",
+      "name": "Thailand Greenhouse Gas Management Organization",
+      "url": "https://www.tgo.or.th",
+      "data_urls": [
+        "https://www.tgo.or.th/2020/index.php/en/page/emission-factor"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "html",
+      "search_keywords": ["TGO emission factor", "Thailand GHG emission factor", "องค์การบริหารจัดการก๊าซเรือนกระจก"],
+      "notes": "태국 온실가스관리기구 공식 배출계수"
+    },
+    {
+      "org": "EPPO",
+      "name": "Energy Policy and Planning Office",
+      "url": "https://www.eppo.go.th",
+      "data_urls": [
+        "https://www.eppo.go.th/index.php/en/en-energystatistics/co2-statistic"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "html",
+      "search_keywords": ["EPPO Thailand energy", "Thailand CO2 statistics", "สำนักงานนโยบายและแผนพลังงาน"],
+      "notes": "태국 에너지정책기획실 CO2 통계"
+    }
+  ]
+}

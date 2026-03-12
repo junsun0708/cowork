@@ -1,0 +1,33 @@
+{
+  "country": "TW",
+  "country_name": "대만",
+  "language_code": "zh",
+  "sources": [
+    {
+      "org": "MOENV",
+      "name": "環境部 - 溫室氣體排放係數管理表",
+      "url": "https://ghgregistry.moenv.gov.tw",
+      "data_urls": [
+        "https://ghgregistry.moenv.gov.tw/epa_ghg/Default.aspx"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "html",
+      "search_keywords": ["EPA Taiwan emission factor", "台灣排放係數", "溫室氣體排放係數", "環境部排放係數"],
+      "notes": "대만 환경부(구 환경보호서) 온실가스 배출계수 관리시스템"
+    },
+    {
+      "org": "BOE",
+      "name": "經濟部能源署 - 電力排碳係數",
+      "url": "https://www.moeaboe.gov.tw",
+      "data_urls": [
+        "https://www.moeaboe.gov.tw/ECW/populace/content/ContentDesc.aspx?menu_id=688"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "html",
+      "search_keywords": ["Bureau of Energy Taiwan", "電力排碳係數", "Taiwan electricity emission factor"],
+      "notes": "대만 경제부 에너지서 전력 배출계수"
+    }
+  ]
+}

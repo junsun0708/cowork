@@ -1,0 +1,20 @@
+{
+  "country": "NZ",
+  "country_name": "뉴질랜드",
+  "language_code": "en",
+  "sources": [
+    {
+      "org": "MFE",
+      "name": "Ministry for the Environment - Emissions Factors Workbook",
+      "url": "https://environment.govt.nz",
+      "data_urls": [
+        "https://environment.govt.nz/publications/measuring-emissions-a-guide-for-organisations-2024-detailed-guide/emission-factors/"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "xlsx",
+      "search_keywords": ["NZ emission factors", "MFE emissions factors workbook", "New Zealand GHG factors"],
+      "notes": "뉴질랜드 환경부 공식 배출계수 워크북 - 매년 갱신"
+    }
+  ]
+}

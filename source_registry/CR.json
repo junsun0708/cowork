@@ -1,0 +1,33 @@
+{
+  "country": "CR",
+  "country_name": "코스타리카",
+  "language_code": "es",
+  "sources": [
+    {
+      "org": "MINAE",
+      "name": "Ministerio de Ambiente y Energía",
+      "url": "https://minae.go.cr",
+      "data_urls": [
+        "https://minae.go.cr/cambio-climatico/factores-de-emision"
+      ],
+      "type": "Government",
+      "reliability_score": 4,
+      "data_format": "html",
+      "search_keywords": ["MINAE factores emision", "Costa Rica emission factors", "factores emision Costa Rica"],
+      "notes": "코스타리카 환경에너지부 배출계수"
+    },
+    {
+      "org": "IMN",
+      "name": "Instituto Meteorológico Nacional",
+      "url": "https://www.imn.ac.cr",
+      "data_urls": [
+        "https://www.imn.ac.cr/inventario-de-emisiones"
+      ],
+      "type": "Government",
+      "reliability_score": 4,
+      "data_format": "html",
+      "search_keywords": ["IMN inventario emisiones", "Costa Rica GHG inventory", "inventario gases efecto invernadero Costa Rica"],
+      "notes": "코스타리카 국립기상연구소 온실가스 인벤토리"
+    }
+  ]
+}
