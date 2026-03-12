@@ -47,6 +47,19 @@
       "reliability_score": 4,
       "search_keywords": ["World Bank emission data", "World Bank climate indicators"],
       "notes": "세계은행 기후 데이터"
+    },
+    {
+      "org": "ClimateTRACE",
+      "name": "Climate TRACE Global Emissions",
+      "url": "https://climatetrace.org",
+      "data_urls": [
+        "https://api.climatetrace.org/v6/country/emissions?since=2022&to=2023"
+      ],
+      "type": "International",
+      "reliability_score": 4,
+      "data_format": "json",
+      "search_keywords": ["Climate TRACE emissions", "Climate TRACE API"],
+      "notes": "Climate TRACE API - 국가/섹터별 CO2/CH4/N2O 배출량, Carbon Catalogue 대체"
     }
   ]
 }

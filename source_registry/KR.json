@@ -18,13 +18,16 @@
     },
     {
       "org": "KEITI",
-      "name": "한국환경산업기술원",
+      "name": "한국환경산업기술원 (환경성적표지)",
       "url": "https://www.keiti.re.kr",
+      "data_urls": [
+        "https://www.epd.or.kr/epd/openapi/selectEpdCertList.do"
+      ],
       "type": "Government",
       "reliability_score": 5,
       "data_format": "html",
-      "search_keywords": ["KEITI 배출계수", "환경산업기술원 탄소"],
-      "notes": "환경성적표지 관련 배출계수"
+      "search_keywords": ["KEITI 배출계수", "환경성적표지", "EPD 한국"],
+      "notes": "환경성적표지 공개 API — 공공데이터포털(data.go.kr) 인증키 필요. 키 발급 후 data_urls에 ?serviceKey=YOUR_KEY 추가"
     }
   ]
 }

@@ -238,6 +238,8 @@ class Fetcher:
         url_format = self._guess_format_from_url(url)
         if url_format:
             fmt = url_format
+        elif data_format == "json":
+            fmt = "json"
         elif data_format != "html":
             # 2순위: data_format이 html이 아닌 경우, HEAD 요청으로 Content-Type 확인
             fmt = self._detect_content_type(url, data_format)
@@ -250,6 +252,8 @@ class Fetcher:
             return self.fetch_csv(url)
         elif fmt == "pdf":
             return self.fetch_pdf(url, save_dir)
+        elif fmt == "json":
+            return self.fetch_api(url)
         else:
             return self.fetch_html(url)
 
@@ -271,17 +275,36 @@ class Fetcher:
         return fallback
 
     def fetch_api(self, url: str, params: dict = None, timeout: int = 30) -> dict:
-        """API JSON 데이터 수집"""
+        """API JSON 데이터 수집 — 결과를 tables/text 형태로도 변환"""
         try:
             resp = self.session.get(url, params=params, timeout=timeout)
             resp.raise_for_status()
 
             data = resp.json()
+
+            # JSON 데이터를 tables 형태로 변환 (extractor 호환)
+            tables = []
+            text_parts = []
+            if isinstance(data, list) and len(data) > 0:
+                # 리스트 형태: 각 항목을 테이블 행으로 변환
+                if isinstance(data[0], dict):
+                    headers = list(data[0].keys())
+                    rows = [headers]
+                    for item in data[:2000]:
+                        rows.append([str(item.get(k, "")) for k in headers])
+                    tables.append(rows)
+                    text_parts.append(str(data[:10]))
+            elif isinstance(data, dict):
+                text_parts.append(json.dumps(data, ensure_ascii=False)[:50000])
+
             return {
                 "success": True,
                 "url": url,
                 "status_code": resp.status_code,
+                "content_type": "application/json",
                 "data": data,
+                "tables": tables,
+                "text": "\n".join(text_parts)[:50000],
             }
         except Exception as e:
             logger.error(f"[Fetcher] API 수집 실패: {url} | {e}")
