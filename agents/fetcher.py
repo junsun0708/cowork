@@ -24,7 +24,7 @@ logger = logging.getLogger("nanoclaw.fetcher")
 
 # User-Agent 설정
 HEADERS = {
-    "User-Agent": "NanoClaw/1.0 (Emission Factor Data Collector; research purposes)",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/json,application/pdf",
     "Accept-Language": "en-US,en;q=0.9,ko;q=0.8,ja;q=0.7",
 }
@@ -40,7 +40,7 @@ class Fetcher:
     def fetch_html(self, url: str, timeout: int = 30) -> dict:
         """HTML 페이지 수집"""
         try:
-            resp = self.session.get(url, timeout=timeout, allow_redirects=True)
+            resp = self.session.get(url, timeout=timeout, allow_redirects=True, verify=True)
             resp.raise_for_status()
 
             soup = BeautifulSoup(resp.text, "html.parser")

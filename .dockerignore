@@ -11,6 +11,8 @@ venv/
 
 # 환경변수 (빌드에 포함하지 않음 - runtime에 env_file로 주입)
 .env
+.env.*
+config/.tokens.json
 
 # 데이터 (volume으로 관리)
 data/nanoclaw.db

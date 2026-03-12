@@ -12,7 +12,7 @@ logger = logging.getLogger("nanoclaw.slack")
 
 # Slack Bot Token (환경변수에서 로드)
 SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN", "")
-SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID", "C08RS2EE25P")
+SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID", "")
 SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
 
 

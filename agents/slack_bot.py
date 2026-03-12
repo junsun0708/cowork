@@ -70,13 +70,13 @@ class NanoClawBot:
         # 앱 멘션 이벤트 (@coworkbot ...)
         @self.app.event("app_mention")
         def handle_mention(event, say, client):
-            logger.info(f"[Bot] app_mention 이벤트 수신: {event}")
+            logger.info(f"[Bot] app_mention 이벤트 수신: user={event.get('user')}, channel={event.get('channel')}")
             self._handle_command(event, say, client)
 
         # 일반 메시지 이벤트
         @self.app.event("message")
         def handle_message(event, say, client):
-            logger.info(f"[Bot] message 이벤트 수신: channel_type={event.get('channel_type')}, text={event.get('text', '')[:50]}")
+            logger.info(f"[Bot] message 이벤트 수신: channel_type={event.get('channel_type')}, user={event.get('user')}")
             # DM에서 온 메시지만 처리 (채널 메시지는 멘션으로 처리)
             if event.get("channel_type") == "im":
                 self._handle_command(event, say, client)
@@ -144,8 +144,9 @@ class NanoClawBot:
 
         # 알 수 없는 명령
         else:
+            safe_text = text[:50].replace('`', "'")
             say(
-                text=f"알 수 없는 명령입니다: `{text}`\n`도움말`을 입력하면 사용 가능한 명령어를 확인할 수 있습니다.",
+                text=f"알 수 없는 명령입니다: `{safe_text}`\n`도움말`을 입력하면 사용 가능한 명령어를 확인할 수 있습니다.",
                 thread_ts=thread_ts,
             )
 
@@ -249,7 +250,7 @@ class NanoClawBot:
                     all_results["errors"] += 1
                     self._post_thread(
                         client, thread_ts,
-                        f"`{country}` 수집 오류: {str(e)[:200]}"
+                        f"`{country}` 수집 중 오류가 발생했습니다. 로그를 확인해주세요."
                     )
 
             # 최종 결과
@@ -278,7 +279,7 @@ class NanoClawBot:
 
         except Exception as e:
             logger.error(f"[Bot] 수집 파이프라인 오류: {e}", exc_info=True)
-            self._post_thread(client, thread_ts, f"수집 파이프라인 오류: {e}")
+            self._post_thread(client, thread_ts, "수집 파이프라인에서 오류가 발생했습니다. 로그를 확인해주세요.")
             self.running_jobs[thread_ts]["status"] = "error"
 
     def _handle_status(self, thread_ts, say):
@@ -350,7 +351,8 @@ class NanoClawBot:
                 thread_ts=thread_ts,
             )
         except Exception as e:
-            say(text=f"조회 오류: {e}", thread_ts=thread_ts)
+            logger.error(f"[Bot] 조회 오류: {e}", exc_info=True)
+            say(text="조회 중 오류가 발생했습니다. 로그를 확인해주세요.", thread_ts=thread_ts)
 
     def _handle_stats(self, thread_ts, say):
         """DB 통계"""
@@ -369,7 +371,8 @@ class NanoClawBot:
                 thread_ts=thread_ts,
             )
         except Exception as e:
-            say(text=f"통계 조회 오류: {e}", thread_ts=thread_ts)
+            logger.error(f"[Bot] 통계 조회 오류: {e}", exc_info=True)
+            say(text="통계 조회 중 오류가 발생했습니다.", thread_ts=thread_ts)
 
     def _handle_countries(self, thread_ts, say):
         """지원 국가 목록"""
@@ -423,7 +426,8 @@ class NanoClawBot:
                 else:
                     self._post_thread(client, thread_ts, "동기화 중 오류가 발생했습니다.")
             except Exception as e:
-                self._post_thread(client, thread_ts, f"동기화 오류: {e}")
+                logger.error(f"[Bot] 동기화 오류: {e}", exc_info=True)
+                self._post_thread(client, thread_ts, "동기화 중 오류가 발생했습니다. 로그를 확인해주세요.")
 
         worker = threading.Thread(target=run_sync, daemon=True)
         worker.start()
