@@ -65,6 +65,45 @@ class Normalizer:
         ("kgCO2e/tkm", "kgCO2e/tkm"): 1.0,
         ("gCO2e/pkm", "kgCO2e/pkm"): 0.001,
         ("kgCO2e/passenger-km", "kgCO2e/pkm"): 1.0,
+        # ── 에너지(mmBtu) 관련 — EPA 스타일 ──
+        ("kgCO2/mmBtu", "kgCO2e/GJ"): 0.947817,    # 1/1.055056
+        ("kgCO2e/mmBtu", "kgCO2e/GJ"): 0.947817,
+        ("gCO2/mmBtu", "kgCO2e/GJ"): 0.000947817,  # 0.001/1.055056
+        ("gCH4/mmBtu", "gCH4/GJ"): 0.947817,
+        ("gN2O/mmBtu", "gN2O/GJ"): 0.947817,
+        # ── 체적(gallon/barrel/scf) 관련 — EPA 스타일 ──
+        ("kgCO2/gallon", "kgCO2e/L"): 0.264172,     # 1/3.78541
+        ("kgCO2e/gallon", "kgCO2e/L"): 0.264172,
+        ("kgCO2/barrel", "kgCO2e/L"): 0.006290,     # 1/158.987
+        ("kgCO2/scf", "kgCO2e/m3"): 35.3147,        # 1/0.0283168
+        # ── 중량(short_ton) 관련 — EPA 스타일 ──
+        ("kgCO2/short_ton", "kgCO2e/ton"): 1.10231,  # 1/0.907185
+        ("kgCO2e/short_ton", "kgCO2e/ton"): 1.10231,
+        # ── DEFRA/EPA 스타일 (kgCO2e/활동단위) ──
+        ("kgCO2e/ton", "kgCO2e/ton"): 1.0,
+        ("kgCO2e/L", "kgCO2e/L"): 1.0,
+        ("kgCO2e/kWh", "kgCO2e/kWh"): 1.0,
+        ("kgCO2e/MWh", "kgCO2e/kWh"): 0.001,
+        ("kgCO2e/GJ", "kgCO2e/GJ"): 1.0,
+        ("kgCO2e/MJ", "kgCO2e/GJ"): 1000.0,
+        ("kgCO2e/gallon", "kgCO2e/L"): 0.264172,
+        ("kgCO2e/kg", "kgCO2e/kg"): 1.0,
+        ("kgCO2e/km", "kgCO2e/km"): 1.0,
+        ("kgCO2e/mile", "kgCO2e/km"): 0.621371,
+        ("kgCO2e/pkm", "kgCO2e/pkm"): 1.0,
+        ("kgCO2e/passenger-mile", "kgCO2e/pkm"): 0.621371,
+        ("kgCO2e/tkm", "kgCO2e/tkm"): 1.0,
+        ("kgCO2e/night", "kgCO2e/night"): 1.0,
+        ("kgCO2e/vehicle-mile", "kgCO2e/km"): 0.621371,
+        ("tCO2e/ton", "kgCO2e/ton"): 1000.0,
+        ("tCO2e/L", "kgCO2e/L"): 1000.0,
+        ("tCO2e/kWh", "kgCO2e/kWh"): 1000.0,
+        # ── EPA g 단위 ──
+        ("gCO2e/mile", "kgCO2e/km"): 0.000621371,
+        ("gCO2e/gallon", "kgCO2e/L"): 0.000264172,
+        ("gCO2e/vehicle-mile", "kgCO2e/km"): 0.000621371,
+        ("gCO2e/passenger-mile", "kgCO2e/pkm"): 0.000621371,
+        ("gCO2e/short_ton", "kgCO2e/ton"): 0.0011023,
         # ── 기타 단위 ──
         ("kgCO2e/unit", "kgCO2e/unit"): 1.0,
         ("kgCO2e/night", "kgCO2e/night"): 1.0,

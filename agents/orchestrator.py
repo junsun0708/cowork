@@ -84,6 +84,7 @@ class Orchestrator:
 
         all_processed = []
         all_diffs = []
+        self._intl_collected = set()  # INTL 소스 중복 수집 방지
 
         for idx, country in enumerate(country_codes):
             progress = int((idx / total) * 100)
@@ -160,6 +161,13 @@ class Orchestrator:
                 logger.info(f"[{country_code}/{org}] URL 없음 - 스킵")
                 continue
 
+            # INTL 소스 중복 수집 방지 (CBAM 등이 17개국에서 반복 다운로드되는 것 방지)
+            if source.get("scope") == "international":
+                if org in self._intl_collected:
+                    logger.info(f"[{country_code}/{org}] INTL 소스 이미 수집됨 - 스킵")
+                    continue
+                self._intl_collected.add(org)
+
             # data_urls가 있으면 우선 수집, 없으면 메인 URL
             fetch_targets = data_urls if data_urls else [url]
 
@@ -195,6 +203,9 @@ class Orchestrator:
                         "language_code": source.get("language_code",
                                                     self.discovery.load_registry(country_code).get("language_code", "en")),
                     }
+                    # 소스에 기본 단위가 정의되어 있으면 전달
+                    if source.get("default_unit"):
+                        source_info["default_unit"] = source["default_unit"]
 
                     # 테이블에서 배출계수 추출 시도
                     extracted = []

@@ -49,6 +49,21 @@
       "notes": "세계은행 기후 데이터"
     },
     {
+      "org": "CBAM",
+      "name": "EU CBAM Default Values (EC-JRC)",
+      "url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en",
+      "data_urls": [
+        "https://taxation-customs.ec.europa.eu/document/download/d71ef0c5-1d5c-45b3-be90-39c43802df87_en?filename=Default+values+for+the+transitional+period+of+the+CBAM.xlsx",
+        "https://taxation-customs.ec.europa.eu/document/download/1c05d211-80cb-4aaa-8ef0-e08005a95d7e_en?filename=DVs%20as%20adopted_v20260204%20.xlsx"
+      ],
+      "type": "International",
+      "reliability_score": 5,
+      "data_format": "xlsx",
+      "search_keywords": ["CBAM default values", "EU CBAM emission factors", "JRC CBAM"],
+      "default_unit": "tCO2e/ton",
+      "notes": "EU CBAM 탄소국경조정메커니즘 기본값 - 과도기+확정기 xlsx, 단위: tCO2/tProduct"
+    },
+    {
       "org": "ClimateTRACE",
       "name": "Climate TRACE Global Emissions",
       "url": "https://climatetrace.org",

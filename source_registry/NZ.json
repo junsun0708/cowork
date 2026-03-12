@@ -8,7 +8,9 @@
       "name": "Ministry for the Environment - Emissions Factors Workbook",
       "url": "https://environment.govt.nz",
       "data_urls": [
-        "https://environment.govt.nz/publications/measuring-emissions-a-guide-for-organisations-2024-detailed-guide/emission-factors/"
+        "https://environment.govt.nz/assets/publications/Measuring-Emissions-2024/Measuring_Emissions_EmissionFactors_Workbook_2024.xlsx",
+        "https://environment.govt.nz/assets/publications/Measuring-Emissions-2023/Measuring-Emissions-Guidance_EmissionFactors_Workbook_2023.xlsx",
+        "https://environment.govt.nz/assets/publications/Measuring-emissions-guidance-August-2022/Emission-factors-workbook-Measuring-emissions-guidance-August-2022.xlsx"
       ],
       "type": "Government",
       "reliability_score": 5,

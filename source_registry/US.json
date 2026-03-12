@@ -8,6 +8,7 @@
       "name": "US EPA GHG Emission Factors Hub",
       "url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
       "data_urls": [
+        "https://www.epa.gov/system/files/documents/2024-02/ghg-emission-factors-hub-2024.xlsx",
         "https://www.epa.gov/system/files/documents/2023-03/ghg-emission-factors-hub.xlsx"
       ],
       "type": "Government",
@@ -21,7 +22,7 @@
       "name": "EPA eGRID Detailed Data",
       "url": "https://www.epa.gov/egrid",
       "data_urls": [
-        "https://www.epa.gov/egrid/detailed-data"
+        "https://www.epa.gov/system/files/documents/2024-01/egrid2022_data.xlsx"
       ],
       "type": "Government",
       "reliability_score": 5,

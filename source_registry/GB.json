@@ -8,8 +8,9 @@
       "name": "DEFRA GHG Conversion Factors",
       "url": "https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting",
       "data_urls": [
-        "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025",
-        "https://assets.publishing.service.gov.uk/media/6846a4f55e92539572806125/ghg-conversion-factors-2025-full-set.xlsx"
+        "https://assets.publishing.service.gov.uk/media/6846a4f55e92539572806125/ghg-conversion-factors-2025-full-set.xlsx",
+        "https://assets.publishing.service.gov.uk/media/6722567487df31a87d8c497e/ghg-conversion-factors-2024-full_set__for_advanced_users__v1_1.xlsx",
+        "https://assets.publishing.service.gov.uk/media/649c5358bb13dc0012b2e2b7/ghg-conversion-factors-2023-full-file-update.xlsx"
       ],
       "type": "Government",
       "reliability_score": 5,

@@ -165,7 +165,7 @@ class Fetcher:
             text_parts = []
             try:
                 xls = pd.ExcelFile(str(xlsx_path))
-                for sheet_name in xls.sheet_names[:10]:  # 최대 10시트
+                for sheet_name in xls.sheet_names[:100]:  # 최대 100시트 (DEFRA 80+시트 대응)
                     df = pd.read_excel(xls, sheet_name=sheet_name, header=None)
                     if len(df) > 0:
                         # DataFrame → 리스트 변환 (header=None이므로 모든 행이 데이터)

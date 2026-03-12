@@ -119,11 +119,11 @@ class Extractor:
         "ef": ["emission factor", "ef", "factor", "value", "co2 factor", "ch4 factor",
                "n2o factor", "계수", "排出係数", "排出量", "conversion factor", "kg co2",
                "heat content", "carbon coefficient", "基礎排出係数", "調整後排出係数",
-               "배출계수", "coefficient"],
+               "배출계수", "coefficient", "default value"],
         "unit": ["unit", "단위", "単位", "mmbtu", "per", "t-co2", "kwh", "co2/kwh"],
         "item": ["activity", "fuel", "fuel type", "item", "category", "항목",
                  "연료", "活動", "source", "type", "事業者名", "電気事業者",
-                 "메뉴", "メニュー"],
+                 "메뉴", "メニュー", "description", "emission source", "product"],
         "year": ["year", "연도", "年度", "令和"],
         "co2": ["co2", "carbon dioxide", "이산화탄소", "二酸化炭素"],
         "ch4": ["ch4", "methane", "메탄", "メタン"],
@@ -223,7 +223,7 @@ class Extractor:
         if header_idx is None:
             return self._extract_from_text_table(table, source_info)
 
-        header_lower = [str(h).lower().strip() for h in header]
+        header_lower = [self._normalize_subscripts(str(h).lower().strip()) for h in header]
 
         # 배출계수 관련 컬럼 식별
         ef_col = self._find_column(header_lower, self.HEADER_KEYWORDS["ef"])
@@ -231,14 +231,17 @@ class Extractor:
         item_col = self._find_column(header_lower, self.HEADER_KEYWORDS["item"])
         year_col = self._find_column(header_lower, self.HEADER_KEYWORDS["year"])
 
-        # 개별 가스 컬럼 식별
-        co2_col = self._find_column(header_lower, self.HEADER_KEYWORDS["co2"])
-        ch4_col = self._find_column(header_lower, self.HEADER_KEYWORDS["ch4"])
-        n2o_col = self._find_column(header_lower, self.HEADER_KEYWORDS["n2o"])
+        # "Fuel" 전용 컬럼 탐색 (DEFRA: Activity=카테고리, Fuel=항목명)
+        fuel_col = None
+        for i, h in enumerate(header_lower):
+            if i != item_col and any(kw in h for kw in ["fuel", "연료", "type"]):
+                fuel_col = i
+                break
 
-        # ef_col과 동일한 컬럼이면 개별 가스 컬럼 아님 (헤더에 co2가 있어도 ef 컬럼과 동일할 수 있음)
-        if co2_col is not None and co2_col == ef_col:
-            co2_col = None
+        # 개별 가스 컬럼 식별 — ef_col과 중복되지 않는 것만
+        co2_col = self._find_column_exclude(header_lower, self.HEADER_KEYWORDS["co2"], exclude={ef_col})
+        ch4_col = self._find_column_exclude(header_lower, self.HEADER_KEYWORDS["ch4"], exclude={ef_col})
+        n2o_col = self._find_column_exclude(header_lower, self.HEADER_KEYWORDS["n2o"], exclude={ef_col})
         has_individual_gas_cols = any(c is not None for c in [co2_col, ch4_col, n2o_col])
 
         # 서브 헤더 단위 행 검사 (EPA 스타일)
@@ -273,6 +276,23 @@ class Extractor:
 
         if ef_col is None and not has_individual_gas_cols:
             return self._extract_from_text_table(table, source_info)
+
+        # EF 열 헤더에서 단위 힌트 추출 (DEFRA 스타일: 헤더="kg CO2e", Unit열="tonnes")
+        ef_header_unit_hint = ""
+        if ef_col is not None and ef_col < len(header):
+            h = str(header[ef_col]).strip()
+            # 헤더 안 괄호 단위 추출 (EPA: "CO2 Factor\n(kg / unit)")
+            paren_match = re.search(r"\(([^)]+)\)", h)
+            if paren_match:
+                paren_unit = self._detect_unit_extended(paren_match.group(1))
+                if paren_unit:
+                    ef_header_unit_hint = "__direct__"  # 직접 단위 감지됨
+                    unit = paren_unit  # 기본 단위로 설정
+            if not ef_header_unit_hint:
+                if re.search(r"kg\s*CO2e?", h, re.IGNORECASE):
+                    ef_header_unit_hint = "kgCO2e"
+                elif re.search(r"tCO2e?", h, re.IGNORECASE):
+                    ef_header_unit_hint = "tCO2e"
 
         # 단위 결정
         unit = ""
@@ -348,8 +368,14 @@ class Extractor:
                     continue
 
                 item = ""
-                if item_col is not None and item_col < len(row):
-                    item = str(row[item_col]).strip()
+                # fuel_col이 있으면 실제 항목명으로 우선 사용
+                if fuel_col is not None and fuel_col < len(row):
+                    fuel_name = str(row[fuel_col]).strip()
+                    if fuel_name not in ("nan", "None", ""):
+                        item = fuel_name
+                if not item or item in ("nan", "None", ""):
+                    if item_col is not None and item_col < len(row):
+                        item = str(row[item_col]).strip()
                 if item in ("nan", "None", ""):
                     item = current_category
 
@@ -364,6 +390,11 @@ class Extractor:
                         detected = self._detect_unit_extended(cell_unit)
                         if detected:
                             row_unit = detected
+                        elif ef_header_unit_hint:
+                            # DEFRA 스타일: 헤더 "kg CO2e" + 셀 "tonnes" → "kgCO2e/ton"
+                            activity_unit = self._normalize_activity_unit(cell_unit)
+                            if activity_unit:
+                                row_unit = f"{ef_header_unit_hint}/{activity_unit}"
 
                 year = None
                 if year_col is not None and year_col < len(row):
@@ -377,7 +408,15 @@ class Extractor:
 
                 # 카테고리 분류 및 계층 정보
                 category = self.classify_category(item) or current_category or ""
+                # 카테고리 미분류 시 단위 기반 추론 (JP/MOE 전력회사명 등)
+                if not category or category == "unknown":
+                    category = self._infer_category_from_unit(row_unit) or category
                 hierarchy = get_hierarchy_for_category(category)
+
+                # 단위가 없으면 source_info의 기본 단위 사용
+                final_unit = row_unit
+                if not final_unit and source_info and source_info.get("default_unit"):
+                    final_unit = source_info["default_unit"]
 
                 record = {
                     "item_name_original": item,
@@ -388,7 +427,7 @@ class Extractor:
                     "level2": hierarchy.get("level2", ""),
                     "level3": hierarchy.get("level3", ""),
                     "standard_value": value,
-                    "standard_unit": row_unit,
+                    "standard_unit": final_unit,
                     "year": year,
                     "extraction_method": "table_column_smart",
                     "table_context": table_context,
@@ -448,7 +487,7 @@ class Extractor:
             if max_cell_len > 60:
                 continue
 
-            row_text = " ".join(c.lower() for c in non_empty)
+            row_text = self._normalize_subscripts(" ".join(c.lower() for c in non_empty))
 
             # 헤더 키워드 매칭 (ef, unit, item, year + co2, ch4, n2o)
             match_count = 0
@@ -699,6 +738,68 @@ class Extractor:
 
         return None
 
+    def _normalize_activity_unit(self, raw_unit: str) -> Optional[str]:
+        """활동 단위를 표준 약어로 변환 (DEFRA 'Unit' 열 대응)"""
+        u = raw_unit.lower().strip()
+        mapping = {
+            "tonnes": "ton",
+            "tonne": "ton",
+            "litres": "L",
+            "litre": "L",
+            "kwh (net cv)": "kWh",
+            "kwh (gross cv)": "kWh",
+            "kwh": "kWh",
+            "mwh": "MWh",
+            "cubic metres": "m3",
+            "m3": "m3",
+            "kg": "kg",
+            "gj": "GJ",
+            "mj": "MJ",
+            "gallons": "gallon",
+            "gallon": "gallon",
+            "passenger km": "pkm",
+            "passenger mile": "passenger-mile",
+            "tonne km": "tkm",
+            "tonne.km": "tkm",
+            "tonne km": "tkm",
+            "km": "km",
+            "miles": "mile",
+            "mile": "mile",
+            "passenger.km": "pkm",
+            "passenger km": "pkm",
+            "passenger-km": "pkm",
+            "room per night": "night",
+            "room night": "night",
+            "night": "night",
+            "scf": "scf",
+            "barrel": "barrel",
+            "gallon": "gallon",
+            "gallons": "gallon",
+            "short ton": "short_ton",
+            "vehicle-mile": "vehicle-mile",
+            "vehicle mile": "vehicle-mile",
+            "passenger-mile": "passenger-mile",
+            "passenger mile": "passenger-mile",
+        }
+        return mapping.get(u)
+
+    def _infer_category_from_unit(self, unit: str) -> Optional[str]:
+        """단위에서 카테고리 추론 (회사명 등 비표준 항목명 대응)"""
+        if not unit:
+            return None
+        u = unit.lower()
+        if "kwh" in u or "mwh" in u:
+            return "electricity"
+        if "l" == u.split("/")[-1] or "/l" in u:
+            return "diesel"  # 액체연료 기본
+        if "gj" in u or "mj" in u or "tj" in u or "mmbtu" in u:
+            return "natural_gas"  # 에너지 단위 기본
+        if "tkm" in u:
+            return "logistics"
+        if "pkm" in u or "passenger" in u:
+            return "road_transport"
+        return None
+
     def standardize_item_name(self, original: str, language_code: str = "en") -> str:
         """항목명을 영문 표준명으로 변환"""
         translations = {
@@ -878,9 +979,25 @@ class Extractor:
 
         return original_lower.replace(" ", "_")
 
+    @staticmethod
+    def _normalize_subscripts(text: str) -> str:
+        """Unicode 아래첨자/위첨자를 일반 숫자로 변환 (CO₂→CO2, CH₄→CH4)"""
+        sub_map = str.maketrans("₀₁₂₃₄₅₆₇₈₉⁰¹²³⁴⁵⁶⁷⁸⁹", "01234567890123456789")
+        return text.translate(sub_map)
+
     def _find_column(self, header: List[str], keywords: List[str]) -> Optional[int]:
         """헤더에서 키워드 매칭 컬럼 인덱스 찾기"""
         for i, h in enumerate(header):
+            for kw in keywords:
+                if kw in h:
+                    return i
+        return None
+
+    def _find_column_exclude(self, header: List[str], keywords: List[str], exclude: set) -> Optional[int]:
+        """헤더에서 키워드 매칭 컬럼 찾기 (exclude 인덱스 제외)"""
+        for i, h in enumerate(header):
+            if i in exclude:
+                continue
             for kw in keywords:
                 if kw in h:
                     return i
@@ -947,6 +1064,16 @@ class Extractor:
             "lb co2 per mwh": "lbCO2/MWh",
             "lb co2e per mwh": "lbCO2e/MWh",
             "kg co2e per kwh": "kgCO2e/kWh",
+            "kg / unit": "kgCO2e/unit",
+            "kg co2 / unit": "kgCO2e/unit",
+            "g / mile": "gCO2e/mile",
+            "g / gallon": "gCO2e/gallon",
+            "g / vehicle-mile": "gCO2e/vehicle-mile",
+            "g / passenger-mile": "gCO2e/passenger-mile",
+            "g / short ton": "gCO2e/short_ton",
+            "lb / mwh": "lbCO2/MWh",
+            "lb co2 / mwh": "lbCO2/MWh",
+            "kg / mwh": "kgCO2e/MWh",
             "t-co2/kwh": "tCO2/kWh",
             "t-co2e/kwh": "tCO2e/kWh",
             "(t-co2/kwh)": "tCO2/kWh",
