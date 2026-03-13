@@ -119,6 +119,87 @@ class Normalizer:
         ("lbN2O/mmBtu", "lbN2O/mmBtu"): 1.0,
     }
 
+    # 국가명 → ISO2 매핑 (UNFCCC-IFI, JRC-CoM 등에서 사용)
+    COUNTRY_NAME_TO_ISO2 = {
+        "afghanistan": "AF", "albania": "AL", "algeria": "DZ", "andorra": "AD",
+        "angola": "AO", "argentina": "AR", "armenia": "AM", "australia": "AU",
+        "austria": "AT", "azerbaijan": "AZ", "bahamas": "BS", "bahrain": "BH",
+        "bangladesh": "BD", "barbados": "BB", "belarus": "BY", "belgium": "BE",
+        "belize": "BZ", "benin": "BJ", "bhutan": "BT", "bolivia": "BO",
+        "bosnia and herzegovina": "BA", "botswana": "BW", "brazil": "BR",
+        "brunei darussalam": "BN", "brunei": "BN", "bulgaria": "BG",
+        "burkina faso": "BF", "burundi": "BI", "cambodia": "KH", "cameroon": "CM",
+        "canada": "CA", "cape verde": "CV", "central african republic": "CF",
+        "chad": "TD", "chile": "CL", "china": "CN", "colombia": "CO",
+        "comoros": "KM", "congo": "CG", "costa rica": "CR", "croatia": "HR",
+        "cuba": "CU", "cyprus": "CY", "czechia": "CZ", "czech republic": "CZ",
+        "denmark": "DK", "djibouti": "DJ", "dominica": "DM",
+        "dominican republic": "DO", "ecuador": "EC", "egypt": "EG",
+        "el salvador": "SV", "equatorial guinea": "GQ", "eritrea": "ER",
+        "estonia": "EE", "eswatini": "SZ", "ethiopia": "ET", "fiji": "FJ",
+        "finland": "FI", "france": "FR", "gabon": "GA", "gambia": "GM",
+        "georgia": "GE", "germany": "DE", "ghana": "GH", "greece": "GR",
+        "grenada": "GD", "guatemala": "GT", "guinea": "GN", "guinea-bissau": "GW",
+        "guyana": "GY", "haiti": "HT", "honduras": "HN", "hungary": "HU",
+        "iceland": "IS", "india": "IN", "indonesia": "ID", "iran": "IR",
+        "iraq": "IQ", "ireland": "IE", "israel": "IL", "italy": "IT",
+        "jamaica": "JM", "japan": "JP", "jordan": "JO", "kazakhstan": "KZ",
+        "kenya": "KE", "kiribati": "KI", "korea": "KR", "south korea": "KR",
+        "republic of korea": "KR", "kuwait": "KW", "kyrgyzstan": "KG",
+        "laos": "LA", "latvia": "LV", "lebanon": "LB", "lesotho": "LS",
+        "liberia": "LR", "libya": "LY", "liechtenstein": "LI", "lithuania": "LT",
+        "luxembourg": "LU", "madagascar": "MG", "malawi": "MW", "malaysia": "MY",
+        "maldives": "MV", "mali": "ML", "malta": "MT", "marshall islands": "MH",
+        "mauritania": "MR", "mauritius": "MU", "mexico": "MX", "micronesia": "FM",
+        "moldova": "MD", "monaco": "MC", "mongolia": "MN", "montenegro": "ME",
+        "morocco": "MA", "mozambique": "MZ", "myanmar": "MM", "namibia": "NA",
+        "nauru": "NR", "nepal": "NP", "netherlands": "NL", "new zealand": "NZ",
+        "nicaragua": "NI", "niger": "NE", "nigeria": "NG", "north macedonia": "MK",
+        "norway": "NO", "oman": "OM", "pakistan": "PK", "palau": "PW",
+        "panama": "PA", "papua new guinea": "PG", "paraguay": "PY", "peru": "PE",
+        "philippines": "PH", "poland": "PL", "portugal": "PT", "qatar": "QA",
+        "romania": "RO", "russia": "RU", "russian federation": "RU",
+        "rwanda": "RW", "samoa": "WS", "saudi arabia": "SA", "senegal": "SN",
+        "serbia": "RS", "seychelles": "SC", "sierra leone": "SL",
+        "singapore": "SG", "slovakia": "SK", "slovenia": "SI",
+        "solomon islands": "SB", "somalia": "SO", "south africa": "ZA",
+        "south sudan": "SS", "spain": "ES", "sri lanka": "LK", "sudan": "SD",
+        "suriname": "SR", "sweden": "SE", "switzerland": "CH", "syria": "SY",
+        "taiwan": "TW", "tajikistan": "TJ", "tanzania": "TZ", "thailand": "TH",
+        "timor-leste": "TL", "togo": "TG", "tonga": "TO",
+        "trinidad and tobago": "TT", "tunisia": "TN", "turkey": "TR",
+        "turkmenistan": "TM", "tuvalu": "TV", "uganda": "UG", "ukraine": "UA",
+        "united arab emirates": "AE", "united kingdom": "GB",
+        "united states": "US", "united states of america": "US",
+        "uruguay": "UY", "uzbekistan": "UZ", "vanuatu": "VU", "venezuela": "VE",
+        "viet nam": "VN", "vietnam": "VN", "yemen": "YE", "zambia": "ZM",
+        "zimbabwe": "ZW", "antigua and barbuda": "AG",
+        "saint kitts and nevis": "KN", "saint lucia": "LC",
+        "saint vincent and the grenadines": "VC", "sao tome and principe": "ST",
+        "cabo verde": "CV", "cote d'ivoire": "CI", "ivory coast": "CI",
+        "democratic republic of the congo": "CD", "north korea": "KP",
+        "palestine": "PS", "puerto rico": "PR", "hong kong": "HK",
+        "macau": "MO", "new caledonia": "NC", "french polynesia": "PF",
+        "guam": "GU", "curacao": "CW", "aruba": "AW",
+    }
+
+    @classmethod
+    def _country_name_to_iso2(cls, name: str) -> str:
+        """국가명을 ISO2 코드로 변환. 매칭 안 되면 빈 문자열 반환."""
+        if not name or len(name) <= 3:
+            return ""
+        # 괄호 제거: "American Samoa (U.S.)" → "American Samoa"
+        import re
+        clean = re.sub(r"\s*\(.*?\)\s*", "", name).strip().lower()
+        # 직접 매칭
+        if clean in cls.COUNTRY_NAME_TO_ISO2:
+            return cls.COUNTRY_NAME_TO_ISO2[clean]
+        # 부분 매칭 (Bolivia, Plurinational State of → bolivia)
+        for key, code in cls.COUNTRY_NAME_TO_ISO2.items():
+            if key in clean or clean in key:
+                return code
+        return ""
+
     def calculate_gwp_values(self, co2: float, ch4: float, n2o: float) -> dict:
         """모든 GWP 버전에 대해 CO2e 값을 산출"""
         results = {}
@@ -164,6 +245,14 @@ class Normalizer:
             ext = Extractor()
             item = normalized.get("item_name_standard") or normalized.get("item_name_original", "")
             normalized["category"] = ext.classify_category(item) or "unknown"
+
+        # ── 3.3 국가명 → ISO2 변환 ──
+        cc = normalized.get("country_code", "")
+        if cc and len(cc) > 3:
+            iso2 = self._country_name_to_iso2(cc)
+            if iso2:
+                normalized["country_code"] = iso2
+                mapping_log.append(f"국가코드 변환: {cc} -> {iso2}")
 
         # ── 3.5 Scope 형식 통일 ("Scope 1" -> "Scope 1") ──
         if normalized.get("scope"):
