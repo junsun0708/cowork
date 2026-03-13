@@ -8,11 +8,13 @@
       "name": "環境省 温室効果ガス排出係数",
       "url": "https://policies.env.go.jp/earth/ghg-santeikohyo/calc.html",
       "data_urls": [
-        "https://policies.env.go.jp/earth/ghg-santeikohyo/files/calc/r07_denki_coefficient_rev4.xlsx"
+        "https://policies.env.go.jp/earth/ghg-santeikohyo/files/calc/r07_denki_coefficient_rev4.xlsx",
+        "https://policies.env.go.jp/earth/ghg-santeikohyo/files/calc/itiran.xlsx"
       ],
       "type": "Government",
       "reliability_score": 5,
       "data_format": "xlsx",
+      "default_unit": "tCO2/kWh",
       "search_keywords": ["Japan MOE emission factor", "排出係数", "温室効果ガス"],
       "notes": "일본 환경성 전력 배출계수 (R07/2025년도)"
     },

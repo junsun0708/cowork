@@ -296,16 +296,22 @@ class DBSync:
 
     @staticmethod
     def generate_uid(country_code: str, org: str, item: str, year: int,
-                     scope: str = None) -> str:
-        """UID 생성: KR-GIR-scope1-electricity-2022
+                     scope: str = None, unit: str = None) -> str:
+        """UID 생성: KR-GIR-scope1-electricity-kgco2e_kwh-2022
 
-        scope 정보가 있으면 포함하여 더 고유한 식별자를 생성한다.
+        scope 및 unit 정보를 포함하여 고유한 식별자를 생성한다.
+        unit 포함으로 동일 항목의 다중 단위(per tonne, per litre) thrashing 방지.
         """
-        item_clean = item.lower().replace(" ", "_").replace("/", "_")
+        item_clean = item.lower().replace(" ", "_").replace("/", "_")[:80]
+        parts = [country_code, org]
         if scope:
-            scope_clean = scope.lower().replace(" ", "_")
-            return f"{country_code}-{org}-{scope_clean}-{item_clean}-{year}"
-        return f"{country_code}-{org}-{item_clean}-{year}"
+            parts.append(scope.lower().replace(" ", "_"))
+        parts.append(item_clean)
+        if unit:
+            unit_clean = unit.lower().replace("/", "_").replace(" ", "")[:20]
+            parts.append(unit_clean)
+        parts.append(str(year) if year else "0")
+        return "-".join(parts)
 
     def _detect_changes(self, existing_dict: dict, record: dict) -> tuple:
         """기존 레코드와 새 레코드 사이의 변경사항을 감지한다.
@@ -384,9 +390,10 @@ class DBSync:
         uid = record.get("uid") or self.generate_uid(
             record["country_code"],
             record["source_org"],
-            record.get("item_name_standard", record.get("item_name_original", "")),
+            record.get("item_name_original", record.get("item_name_standard", "")),
             record.get("year", 0),
             scope=record.get("scope"),
+            unit=record.get("standard_unit"),
         )
         record["uid"] = uid
         record["last_checked_at"] = datetime.now().isoformat()

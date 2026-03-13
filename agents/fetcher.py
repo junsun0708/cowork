@@ -189,7 +189,7 @@ class Fetcher:
             logger.error(f"[Fetcher] Excel 수집 실패: {url} | {e}")
             return {"success": False, "url": url, "error": str(e)}
 
-    def fetch_csv(self, url: str, timeout: int = 30) -> dict:
+    def fetch_csv(self, url: str, timeout: int = 120) -> dict:
         """CSV 파일 다운로드 및 파싱"""
         try:
             resp = self.session.get(url, timeout=timeout)
@@ -199,7 +199,7 @@ class Fetcher:
             from io import StringIO
 
             text = resp.text
-            df = pd.read_csv(StringIO(text), nrows=1000)
+            df = pd.read_csv(StringIO(text), nrows=50000)  # 대규모 CSV 지원 (Ember 등)
 
             header = [str(c) for c in df.columns.tolist()]
             rows = [header]

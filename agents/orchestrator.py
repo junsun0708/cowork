@@ -6,6 +6,7 @@ NanoClaw Orchestrator
 """
 import json
 import logging
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -195,8 +196,10 @@ class Orchestrator:
                         continue
 
                     # 3. Raw 저장
+                    # INTL 소스는 "INTL" 국가코드 사용 (CBAM 등이 특정 국가에 잘못 귀속되는 것 방지)
+                    effective_country = "INTL" if source.get("scope") == "international" else country_code
                     source_info = {
-                        "country_code": country_code,
+                        "country_code": effective_country,
                         "source_org": org,
                         "source_type": source_type,
                         "data_reliability_score": reliability,
@@ -206,6 +209,24 @@ class Orchestrator:
                     # 소스에 기본 단위가 정의되어 있으면 전달
                     if source.get("default_unit"):
                         source_info["default_unit"] = source["default_unit"]
+
+                    # URL/파일명에서 년도 추출 (DEFRA, MFE 등 파일명/경로에 년도가 포함된 경우)
+                    url_year = None
+                    # 패턴 1: factors-2025, conversion-2024 등
+                    # 패턴 2: Emissions-2024/, Workbook_2024.xlsx 등
+                    # 패턴 3: hub-2024.xlsx, egrid2022 등
+                    for pattern in [
+                        r"(?:factors?|conversion|emissions?|workbook|hub|egrid)[_-]?(\d{4})",
+                        r"[_/-](\d{4})[/._]",
+                    ]:
+                        url_year_match = re.search(pattern, target_url, re.IGNORECASE)
+                        if url_year_match:
+                            y = int(url_year_match.group(1))
+                            if 2000 <= y <= 2030:
+                                url_year = y
+                                break
+                    if url_year:
+                        source_info["url_year"] = url_year
 
                     # 테이블에서 배출계수 추출 시도
                     extracted = []

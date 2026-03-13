@@ -109,6 +109,14 @@ class Normalizer:
         ("kgCO2e/night", "kgCO2e/night"): 1.0,
         ("kgCO2e/person", "kgCO2e/person"): 1.0,
         ("kgCO2e/m2", "kgCO2e/m2"): 1.0,
+        # ── eGRID 개별 가스 lb 단위 ──
+        ("lbCO2/MWh", "kgCO2e/kWh"): 0.000453592,
+        ("lbCH4/MWh", "lbCH4/MWh"): 1.0,  # 개별가스 단위는 원본 유지
+        ("lbN2O/MWh", "lbN2O/MWh"): 1.0,
+        ("lbCO2e/mmBtu", "kgCO2e/GJ"): 0.000430,  # lb->kg * mmBtu->GJ
+        ("lbCO2/mmBtu", "kgCO2e/GJ"): 0.000430,
+        ("lbCH4/mmBtu", "lbCH4/mmBtu"): 1.0,
+        ("lbN2O/mmBtu", "lbN2O/mmBtu"): 1.0,
     }
 
     def calculate_gwp_values(self, co2: float, ch4: float, n2o: float) -> dict:
@@ -157,12 +165,26 @@ class Normalizer:
             item = normalized.get("item_name_standard") or normalized.get("item_name_original", "")
             normalized["category"] = ext.classify_category(item) or "unknown"
 
+        # ── 3.5 Scope 형식 통일 ("Scope 1" -> "Scope 1") ──
+        if normalized.get("scope"):
+            s = normalized["scope"].strip()
+            # "Scope1" -> "Scope 1", "scope 2" -> "Scope 2" 등
+            import re as _re
+            m = _re.match(r"(?i)scope\s*(\d)", s)
+            if m:
+                normalized["scope"] = f"Scope {m.group(1)}"
+
         # ── 4. Scope / 계층 자동 배정 ──
         category = normalized.get("category", "unknown")
         if category and category != "unknown":
             # Scope
-            if not record.get("scope"):
+            if not normalized.get("scope"):
                 scope = get_scope_for_category(category)
+                # "Scope1" -> "Scope 1" 형식 통일
+                import re as _re
+                m = _re.match(r"(?i)scope\s*(\d)", scope)
+                if m:
+                    scope = f"Scope {m.group(1)}"
                 normalized["scope"] = scope
                 mapping_log.append(f"Scope 자동배정: {scope}")
 
@@ -277,12 +299,19 @@ class Normalizer:
             issues.append("country_code 누락")
         if not record.get("source_org"):
             issues.append("source_org 누락")
-        if not record.get("standard_value"):
-            issues.append("standard_value 누락")
-        if record.get("standard_value", 0) <= 0:
+
+        # standard_value가 없더라도 개별 가스 값(co2/ch4/n2o)이 있으면 유효
+        has_value = bool(record.get("standard_value"))
+        has_gas = any(record.get(g) for g in ["co2_value", "ch4_value", "n2o_value"])
+        if not has_value and not has_gas:
+            issues.append("standard_value 및 개별 가스 값 모두 누락")
+        if record.get("standard_value") is not None and record.get("standard_value", 0) <= 0 and not has_gas:
             issues.append("standard_value가 0 이하")
+
         if not record.get("standard_unit"):
-            issues.append("standard_unit 누락")
+            # 개별 가스 단위라도 있으면 허용
+            if not any(record.get(u) for u in ["co2_unit", "ch4_unit", "n2o_unit"]):
+                issues.append("standard_unit 누락")
         if record.get("year") and (record["year"] < 1990 or record["year"] > 2030):
             issues.append(f"year 범위 이상: {record['year']}")
 

@@ -1,0 +1,133 @@
+{
+  "country": "GLOBAL",
+  "country_name": "글로벌 오픈데이터",
+  "language_code": "en",
+  "sources": [
+    {
+      "org": "Ember",
+      "name": "Ember Yearly Electricity Data (215개국)",
+      "url": "https://ember-energy.org/data/yearly-electricity-data/",
+      "data_urls": [
+        "https://files.ember-energy.org/public-downloads/yearly_full_release_long_format.csv"
+      ],
+      "type": "Research",
+      "reliability_score": 4,
+      "data_format": "csv",
+      "scope": "international",
+      "search_keywords": ["Ember electricity emission factor", "grid carbon intensity"],
+      "notes": "215개국 전력 발전/배출 데이터, CC-BY-4.0, 월 2회 업데이트"
+    },
+    {
+      "org": "OWID-Energy",
+      "name": "Our World in Data Energy Dataset",
+      "url": "https://github.com/owid/energy-data",
+      "data_urls": [
+        "https://owid-public.owid.io/data/energy/owid-energy-data.csv"
+      ],
+      "type": "Research",
+      "reliability_score": 4,
+      "data_format": "csv",
+      "scope": "international",
+      "search_keywords": ["OWID energy data", "carbon intensity electricity"],
+      "notes": "전세계 에너지/탄소 강도 데이터, Ember+EI 통합"
+    },
+    {
+      "org": "OWID-CO2",
+      "name": "Our World in Data CO2 & GHG Emissions",
+      "url": "https://github.com/owid/co2-data",
+      "data_urls": [
+        "https://nyc3.digitaloceanspaces.com/owid-public/data/co2/owid-co2-data.csv"
+      ],
+      "type": "Research",
+      "reliability_score": 4,
+      "data_format": "csv",
+      "scope": "international",
+      "search_keywords": ["OWID CO2 emissions", "greenhouse gas per capita"],
+      "notes": "전세계 CO2/GHG 배출 데이터 (연간, 1인당, 누적, 소비기반)"
+    },
+    {
+      "org": "GHGProtocol",
+      "name": "GHG Protocol Cross-Sector Emission Factors",
+      "url": "https://ghgprotocol.org/calculation-tools-and-guidance",
+      "data_urls": [
+        "https://ghgprotocol.org/sites/default/files/2024-05/Emission_Factors_for_Cross_Sector_Tools_V2.0_0.xlsx"
+      ],
+      "type": "International",
+      "reliability_score": 5,
+      "data_format": "xlsx",
+      "scope": "international",
+      "search_keywords": ["GHG Protocol emission factors", "cross sector tools"],
+      "notes": "GHG Protocol 공식 교차부문 배출계수 V2.0 (고정연소, 구매전력, 이동연소)"
+    },
+    {
+      "org": "JRC-CoM",
+      "name": "EU JRC Emission Factors for Electricity Consumption",
+      "url": "https://data.jrc.ec.europa.eu/dataset/919df040-0252-4e4e-ad82-c054896e1641",
+      "data_urls": [
+        "https://jeodpp.jrc.ec.europa.eu/ftp/public/JRC-OpenData/CoM/EmissionsFactorElectricity/CoM-Emission-factors-for-national-electricity-2024.xlsx"
+      ],
+      "type": "International",
+      "reliability_score": 5,
+      "data_format": "xlsx",
+      "scope": "international",
+      "search_keywords": ["JRC emission factors electricity", "Covenant of Mayors"],
+      "notes": "EU JRC 국가별 전력 소비 배출계수 (1990-2021), CC-BY-4.0"
+    },
+    {
+      "org": "Cascale-FEM",
+      "name": "Cascale Higg FEM Emission Factor Reference",
+      "url": "https://howtohigg.cascale.org/resources-library/higg-fem-2025-resources/",
+      "data_urls": [
+        "https://howtohigg.cascale.org/wp-content/uploads/2025/05/FEM-2024-Emission-Factor-Reference.xlsx"
+      ],
+      "type": "Research",
+      "reliability_score": 3,
+      "data_format": "xlsx",
+      "scope": "international",
+      "search_keywords": ["Higg FEM emission factor", "Cascale sustainability"],
+      "notes": "패션/섬유 산업 시설 환경 모듈 배출계수 참고자료"
+    },
+    {
+      "org": "EPA-Hub",
+      "name": "US EPA GHG Emission Factors Hub (2024)",
+      "url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+      "data_urls": [
+        "https://www.epa.gov/system/files/documents/2024-02/ghg-emission-factors-hub-2024.xlsx"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "xlsx",
+      "scope": "international",
+      "search_keywords": ["EPA emission factors hub", "GHG emission factors 2024"],
+      "notes": "US EPA 공식 GHG 배출계수 허브 2024 (고정연소, 이동연소, 전력 등)"
+    },
+    {
+      "org": "UNFCCC-IFI",
+      "name": "UNFCCC IFI Default Grid Emission Factors",
+      "url": "https://unfccc.int/climate-action/sectoral-engagement/ifis-harmonization-of-standards-for-ghg-accounting/froject-specific-default-grid-emission-factors",
+      "data_urls": [
+        "https://unfccc.int/sites/default/files/resource/Harmonized_IFI_Default_Grid_Factors_2021_v3.2_0.xlsx"
+      ],
+      "type": "International",
+      "reliability_score": 5,
+      "data_format": "xlsx",
+      "scope": "international",
+      "search_keywords": ["UNFCCC IFI grid emission factors", "default grid factors"],
+      "notes": "UNFCCC 국제금융기관 합의 국가별 그리드 배출계수 (190+개국, tCO2/MWh)"
+    },
+    {
+      "org": "ADEME-BC",
+      "name": "ADEME Base Carbone (France)",
+      "url": "https://data.ademe.fr/datasets/base-carboner",
+      "data_urls": [
+        "https://data.ademe.fr/data-fair/api/v1/datasets/base-carboner/lines?size=10000&format=csv"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "csv",
+      "scope": "international",
+      "search_keywords": ["ADEME Base Carbone", "facteur emission France"],
+      "notes": "프랑스 ADEME 공식 배출계수 DB (10,000+ 항목), CSV API 직접 다운로드"
+    }
+  ]
+}

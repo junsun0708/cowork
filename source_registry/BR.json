@@ -1,0 +1,16 @@
+{
+  "country": "BR",
+  "country_name": "브라질",
+  "language_code": "pt",
+  "sources": [
+    {
+      "org": "MCTI",
+      "name": "Ministério da Ciência, Tecnologia e Inovação",
+      "url": "https://www.gov.br/mcti/pt-br/acompanhe-o-mcti/sirene",
+      "type": "Government",
+      "reliability_score": 5,
+      "search_keywords": ["Brazil emission factors", "fatores de emissão Brasil"],
+      "notes": "브라질 정부 온실가스 인벤토리 시스템"
+    }
+  ]
+}

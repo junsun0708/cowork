@@ -64,6 +64,24 @@
       "notes": "EU CBAM 탄소국경조정메커니즘 기본값 - 과도기+확정기 xlsx, 단위: tCO2/tProduct"
     },
     {
+      "org": "WRAP",
+      "name": "Waste & Resources Action Programme",
+      "url": "https://wrap.org.uk",
+      "type": "Research",
+      "reliability_score": 3,
+      "search_keywords": ["WRAP emission factors", "WRAP carbon footprint", "WRAP waste data"],
+      "notes": "영국 자원순환 연구기관 - 폐기물/자원 분야 배출계수"
+    },
+    {
+      "org": "Worldsteel",
+      "name": "World Steel Association",
+      "url": "https://worldsteel.org",
+      "type": "Research",
+      "reliability_score": 3,
+      "search_keywords": ["Worldsteel emission factors", "steel CO2 intensity", "worldsteel LCI"],
+      "notes": "세계철강협회 - 철강 분야 배출계수 및 LCI 데이터"
+    },
+    {
       "org": "ClimateTRACE",
       "name": "Climate TRACE Global Emissions",
       "url": "https://climatetrace.org",

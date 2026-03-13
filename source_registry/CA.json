@@ -1,0 +1,20 @@
+{
+  "country": "CA",
+  "country_name": "캐나다",
+  "language_code": "en",
+  "sources": [
+    {
+      "org": "ECCC",
+      "name": "Environment and Climate Change Canada - NIR Annex 10",
+      "url": "https://data-donnees.az.ec.gc.ca/data/substances/monitor/canada-s-official-greenhouse-gas-inventory/",
+      "data_urls": [
+        "https://data-donnees.az.ec.gc.ca/api/file?path=/substances/monitor/canada-s-official-greenhouse-gas-inventory/B-Economic-Sector/EN_Annex10_GHG_Econ_Canada.xlsx"
+      ],
+      "type": "Government",
+      "reliability_score": 5,
+      "data_format": "xlsx",
+      "search_keywords": ["Canada GHG inventory", "ECCC emission factors", "NIR Annex 10"],
+      "notes": "캐나다 공식 국가 GHG 인벤토리 Annex 10 (경제 부문별 배출계수)"
+    }
+  ]
+}
